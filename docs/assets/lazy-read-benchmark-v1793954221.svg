@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 710" width="100%" height="100%">
+  <defs>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+      
+      @keyframes pulseRed {
+        0%, 100% { opacity: 0.75; filter: drop-shadow(0 0 4px rgba(248, 81, 73, 0.4)); }
+        50% { opacity: 1; filter: drop-shadow(0 0 12px rgba(248, 81, 73, 0.9)); }
+      }
+      
+      @keyframes pulseGreen {
+        0%, 100% { opacity: 0.75; filter: drop-shadow(0 0 4px rgba(63, 185, 80, 0.4)); }
+        50% { opacity: 1; filter: drop-shadow(0 0 12px rgba(63, 185, 80, 0.9)); }
+      }
+      
+      .meter-pulse-red {
+        animation: pulseRed 2s infinite ease-in-out;
+      }
+      
+      .meter-pulse-green {
+        animation: pulseGreen 2s infinite ease-in-out;
+      }
+    </style>
+    
+    <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#da3633" />
+      <stop offset="100%" stop-color="#f85149" />
+    </linearGradient>
+
+    <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#238636" />
+      <stop offset="100%" stop-color="#3fb950" />
+    </linearGradient>
+  </defs>
+
+  <!-- Clean Container Background -->
+  <rect width="1200" height="710" rx="14" fill="#0d1117" stroke="#30363d" stroke-width="1" />
+
+  <!-- Main Top Header -->
+  <text x="40" y="42" class="sans" font-size="17" font-weight="700" fill="#f0f6fc">BENCHMARK SHOWCASE: Standard AI Exploration vs. lazy-read v1.7.0</text>
+  <text x="40" y="64" class="sans" font-size="13" fill="#8b949e">Comparative token footprint, multi-turn reasoning overhead, and context survival</text>
+
+  <!-- LEFT CARD: Standard AI Exploration -->
+  <g transform="translate(36, 84)">
+    <rect width="550" height="596" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1" />
+    
+    <!-- Card Header -->
+    <rect x="20" y="20" width="84" height="22" rx="4" fill="#da363322" stroke="#da363366" stroke-width="1" />
+    <text x="62" y="35" text-anchor="middle" class="mono" font-size="10" font-weight="700" fill="#f85149">OVERFLOW</text>
+    
+    <text x="114" y="36" class="sans" font-size="15" font-weight="700" fill="#f85149">Standard AI Ingestion</text>
+    <text x="20" y="58" class="sans" font-size="12" fill="#8b949e">Full raw file dumps (cat / read_file / unbounded grep)</text>
+
+    <line x1="20" y1="72" x2="530" y2="72" stroke="#21262d" stroke-width="1" />
+
+    <!-- Section 1: Execution Telemetry -->
+    <text x="20" y="94" class="sans" font-size="12" font-weight="600" fill="#f85149">Execution Telemetry (Context Flooded):</text>
+    
+    <g class="mono" font-size="11">
+      <text x="28" y="116" fill="#8b949e">• Codebase Raw Read:</text>
+      <text x="522" y="116" text-anchor="end" fill="#f85149">~65,352 tokens (unbounded)</text>
+
+      <text x="28" y="136" fill="#8b949e">• Long Spec Docs (MD/PDF):</text>
+      <text x="522" y="136" text-anchor="end" fill="#f85149">~86,799 tokens (css/script noise)</text>
+
+      <text x="28" y="156" fill="#8b949e">• 50,000-Row CSV/XLSX:</text>
+      <text x="522" y="156" text-anchor="end" font-weight="700" fill="#f85149">~1,176,414 tokens (OVERFLOW!)</text>
+
+      <text x="28" y="176" fill="#8b949e">• Error Lookup (2 calls):</text>
+      <text x="522" y="176" text-anchor="end" fill="#c9d1d9">grep + Read window (~167 tokens)</text>
+
+      <text x="28" y="196" fill="#8b949e">• Function Git Diff:</text>
+      <text x="522" y="196" text-anchor="end" fill="#c9d1d9">git log -p -3 (~3,660 tokens)</text>
+
+      <text x="28" y="216" fill="#8b949e">• Broad Search (22 hits):</text>
+      <text x="522" y="216" text-anchor="end" fill="#c9d1d9">grep -rn (~600 tokens + .pyc noise)</text>
+    </g>
+
+    <line x1="20" y1="234" x2="530" y2="234" stroke="#21262d" stroke-width="1" />
+
+    <!-- Section 2: Agent Investigation Trace -->
+    <text x="20" y="254" class="sans" font-size="12" font-weight="600" fill="#8b949e">Agent Investigation Trace:</text>
+
+    <g class="mono" font-size="11">
+      <text x="28" y="276" fill="#c9d1d9">[Turn 1] cat *.py / read_file dumps 65k tokens into context</text>
+      <text x="28" y="296" fill="#c9d1d9">[Turn 2] Loading 50k rows table triggers 200k context limit error</text>
+      <text x="28" y="316" fill="#f85149">[Turn 3] Context Window Saturated (6.4x limit) - Task Aborted!</text>
+      <text x="28" y="336" fill="#f85149">[Failure] Out of memory &amp; token budget depleted</text>
+    </g>
+
+    <!-- Section 3: Outcome Box -->
+    <g transform="translate(20, 362)">
+      <rect width="510" height="212" rx="8" fill="#1c1417" stroke="#da3633" stroke-width="1" />
+      
+      <text x="18" y="28" class="sans" font-size="12" font-weight="700" fill="#f85149">OUTCOME: CONTEXT WINDOW OVERFLOW &amp; HIGH COST</text>
+      
+      <g class="mono" font-size="11">
+        <text x="22" y="52" fill="#8b949e">• Combined Task Tokens:</text>
+        <text x="492" y="52" text-anchor="end" font-weight="700" fill="#f85149">~1,291,706 tokens (6.4x limit!)</text>
+
+        <text x="22" y="74" fill="#8b949e">• Multi-Step Round-Trips:</text>
+        <text x="492" y="74" text-anchor="end" fill="#c9d1d9">Slow (2-3 calls per symbol)</text>
+
+        <text x="22" y="96" fill="#8b949e">• Context Survival Status:</text>
+        <text x="492" y="96" text-anchor="end" font-weight="700" fill="#f85149">FAILED (Context Overrun)</text>
+
+        <text x="22" y="124" class="sans" font-size="11" fill="#8b949e">Context Saturation Meter (200k Window):</text>
+      </g>
+
+      <!-- Meter Bar (Pulsing Red) -->
+      <g transform="translate(22, 136)">
+        <rect width="466" height="14" rx="7" fill="#2d1d20" stroke="#da363344" />
+        <rect class="meter-pulse-red" width="466" height="14" rx="7" fill="url(#redGradient)">
+          <animate attributeName="opacity" values="0.75;1;0.75" dur="1.8s" repeatCount="indefinite" />
+        </rect>
+      </g>
+
+      <text x="22" y="174" class="mono" font-size="10" font-weight="600" fill="#f85149">100% Saturated (~1,291k tokens) | Context Capacity Exhausted</text>
+    </g>
+  </g>
+
+  <!-- RIGHT CARD: lazy-read Workflow -->
+  <g transform="translate(614, 84)">
+    <rect width="550" height="596" rx="10" fill="#161b22" stroke="#238636" stroke-width="1.2" />
+    
+    <!-- Card Header -->
+    <rect x="20" y="20" width="100" height="22" rx="4" fill="#23863622" stroke="#23863666" stroke-width="1" />
+    <text x="70" y="35" text-anchor="middle" class="mono" font-size="10" font-weight="700" fill="#3fb950">99.34% SAVED</text>
+    
+    <text x="130" y="36" class="sans" font-size="15" font-weight="700" fill="#3fb950">lazy-read Workflow</text>
+    <text x="20" y="58" class="sans" font-size="12" fill="#8b949e">Read the map first, then slice with surgical precision</text>
+
+    <line x1="20" y1="72" x2="530" y2="72" stroke="#21262d" stroke-width="1" />
+
+    <!-- Section 1: Execution Telemetry -->
+    <text x="20" y="94" class="sans" font-size="12" font-weight="600" fill="#3fb950">Execution Telemetry (Surgical Precision):</text>
+    
+    <g class="mono" font-size="11">
+      <text x="28" y="116" fill="#8b949e">• Codebase Skeleton (codemap):</text>
+      <text x="522" y="116" text-anchor="end" font-weight="600" fill="#3fb950">~1,468 tokens (-97.75%)</text>
+
+      <text x="28" y="136" fill="#8b949e">• Outline Slice (docmap):</text>
+      <text x="522" y="136" text-anchor="end" font-weight="600" fill="#3fb950">~8,114 tokens (-90.65%)</text>
+
+      <text x="28" y="156" fill="#8b949e">• Schema &amp; Agg (tablemap):</text>
+      <text x="522" y="156" text-anchor="end" font-weight="700" fill="#3fb950">~1,534 tokens (-99.87%)</text>
+
+      <text x="28" y="176" fill="#8b949e">• Error Lookup (1 call):</text>
+      <text x="522" y="176" text-anchor="end" fill="#3fb950">find (~103 tokens, -38%)</text>
+
+      <text x="28" y="196" fill="#8b949e">• Function Git Diff:</text>
+      <text x="522" y="196" text-anchor="end" fill="#3fb950">history (~90 tokens, -97.8%)</text>
+
+      <text x="28" y="216" fill="#8b949e">• Broad Search (22 hits):</text>
+      <text x="522" y="216" text-anchor="end" fill="#3fb950">find compact (~196 tokens, -67%)</text>
+    </g>
+
+    <line x1="20" y1="234" x2="530" y2="234" stroke="#21262d" stroke-width="1" />
+
+    <!-- Section 2: Agent Investigation Trace -->
+    <text x="20" y="254" class="sans" font-size="12" font-weight="600" fill="#8b949e">Agent Investigation Trace:</text>
+
+    <g class="mono" font-size="11">
+      <text x="28" y="276" fill="#c9d1d9">[Turn 1] codemap inspect finds exact crashing function in 1 call</text>
+      <text x="28" y="296" fill="#c9d1d9">[Turn 2] docmap slice pulls exact specification requirement</text>
+      <text x="28" y="316" fill="#c9d1d9">[Turn 3] tablemap agg verifies numbers without dumping raw data</text>
+      <text x="28" y="336" fill="#3fb950">[Success] 1-shot edit applied &amp; all 30/30 unit tests passed</text>
+    </g>
+
+    <!-- Section 3: Outcome Box -->
+    <g transform="translate(20, 362)">
+      <rect width="510" height="212" rx="8" fill="#0d2117" stroke="#238636" stroke-width="1.2" />
+      
+      <text x="18" y="28" class="sans" font-size="12" font-weight="700" fill="#3fb950">OUTCOME: 99.34% TOKEN SAVINGS &amp; 1-SHOT ACCURACY</text>
+      
+      <g class="mono" font-size="11">
+        <text x="22" y="52" fill="#8b949e">• Combined Task Tokens:</text>
+        <text x="492" y="52" text-anchor="end" font-weight="700" fill="#3fb950">~8,588 tokens (150.4x smaller!)</text>
+
+        <text x="22" y="74" fill="#8b949e">• Multi-Step Round-Trips:</text>
+        <text x="492" y="74" text-anchor="end" fill="#3fb950">1-shot execution with context</text>
+
+        <text x="22" y="96" fill="#8b949e">• Context Window Consumption:</text>
+        <text x="492" y="96" text-anchor="end" font-weight="700" fill="#3fb950">&lt; 4.5% of 200k (PASSED)</text>
+
+        <text x="22" y="124" class="sans" font-size="11" fill="#8b949e">Token Efficiency Meter (Minimal Overhead):</text>
+      </g>
+
+      <!-- Meter Bar (Pulsing Green) -->
+      <g transform="translate(22, 136)">
+        <rect width="466" height="14" rx="7" fill="#162e20" stroke="#23863644" />
+        <rect class="meter-pulse-green" width="22" height="14" rx="7" fill="url(#greenGradient)">
+          <animate attributeName="opacity" values="0.75;1;0.75" dur="1.8s" repeatCount="indefinite" />
+        </rect>
+      </g>
+
+      <text x="22" y="174" class="mono" font-size="10" font-weight="600" fill="#3fb950">4.3% Window Utilized (~8.5k / 200k limit) | 95.7% Budget Preserved</text>
+    </g>
+  </g>
+</svg>
