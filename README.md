@@ -2,6 +2,10 @@
 
 Read the map first, then slice. Cuts the INPUT tokens an AI agent spends reading code, long documents, and tables.
 
+<p align="center">
+  <img src="docs/assets/lazy-read-benchmark-showcase.svg" alt="lazy-read Benchmark Showcase" width="100%" />
+</p>
+
 ## Core Philosophy & Baseline Capabilities
 
 When standard AI agents explore a repository, document, or spreadsheet, their default behavior is to dump full file contents into the context window (`cat`, `Read`, or `read_file`). This rapidly consumes context budgets, degrades reasoning quality, and leads to context overflow.
