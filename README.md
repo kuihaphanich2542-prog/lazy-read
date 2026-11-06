@@ -72,6 +72,56 @@ Tested against Python standard library copy with a seeded logic defect (`end != 
 
 ---
 
+### Benchmark Visualizations
+
+#### 1. Debug Scenarios Token Comparison (Lower is Better)
+
+```mermaid
+xychart-beta
+    title "Input Token Cost per Debug Scenario (Tokens)"
+    x-axis ["Error Message", "Stack Trace", "Function History", "Broad String"]
+    y-axis "Input Tokens" 0 --> 4000
+    bar [167, 170, 3660, 600]
+    bar [103, 144, 90, 196]
+```
+> Note: First bar represents Standard Tools (`grep` / Read / `git log -p -3`); second bar represents `lazy-read v1.7.0`.
+
+#### 2. Cross-Modality Input Reduction Ratio
+
+```mermaid
+flowchart LR
+    subgraph S1 ["Source Code (14+ Languages)"]
+        direction TB
+        C1["Standard: ~65,352 tokens"] --> C2["lazy-read: ~1,468 tokens"]
+        C2 -.-> CR["44.5x Smaller (-97.75%)"]
+    end
+
+    subgraph S2 ["Long Documents (MD/TXT/DOCX/PDF)"]
+        direction TB
+        D1["Standard: ~86,799 tokens"] --> D2["lazy-read: ~8,114 tokens"]
+        D2 -.-> DR["10.7x Smaller (-90.65%)"]
+    end
+
+    subgraph S3 ["Tabular Data (CSV/TSV/XLSX)"]
+        direction TB
+        T1["Standard: ~1,176,414 tokens"] --> T2["lazy-read: ~1,534 tokens"]
+        T2 -.-> TR["766.8x Smaller (-99.87%)"]
+    end
+```
+
+#### 3. End-to-End Workflow Context Window Fit (200k Limit)
+
+```mermaid
+flowchart TD
+    Raw["Standard Raw Exploration: ~1,291,706 tokens<br/>(Exceeds 200k context limit by 6.4x - Task Fails)"]
+    Safe["lazy-read Exploration: ~8,588 tokens<br/>(Consumes < 4.5% of context window - Task Succeeds)"]
+
+    style Raw fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
+    style Safe fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+```
+
+---
+
 
 
 ## Folder Structure
