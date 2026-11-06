@@ -72,36 +72,13 @@ Tested against Python standard library copy with a seeded logic defect (`end != 
 
 ---
 
-### Visual Test Comparison (Input Tokens Used)
+### Test Suite Verification Results
 
 ```mermaid
-flowchart LR
-    subgraph BEFORE ["Standard Tools (cat / grep / git log)"]
-        direction TB
-        B1["Error Search: ~167 tokens"]
-        B2["Stack Trace: ~170 tokens"]
-        B3["Git History: ~3,660 tokens"]
-        B4["Broad Query: ~600 tokens"]
-        B5["End-to-End Task: ~1,291,706 tokens (Overflow)"]
-    end
-
-    subgraph AFTER ["lazy-read v1.7.0"]
-        direction TB
-        A1["find: ~103 tokens (-38%)"]
-        A2["trace: ~144 tokens (-15%)"]
-        A3["history: ~90 tokens (-97.8%)"]
-        A4["find compact: ~196 tokens (-67%)"]
-        A5["All Engines: ~8,588 tokens (Fits Context)"]
-    end
-
-    B1 ==> A1
-    B2 ==> A2
-    B3 ==> A3
-    B4 ==> A4
-    B5 ==> A5
-
-    style BEFORE fill:#fff5f5,stroke:#e53e3e,stroke-width:2px,color:#9b2c2c
-    style AFTER fill:#f0fff4,stroke:#38a169,stroke-width:2px,color:#22543d
+pie title Test Suite Results (30 Tests Total)
+    "Passed (Verified)" : 28
+    "Skipped (Optional libs: reportlab/openpyxl)" : 2
+    "Failed" : 0
 ```
 
 ---
