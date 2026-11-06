@@ -72,52 +72,36 @@ Tested against Python standard library copy with a seeded logic defect (`end != 
 
 ---
 
-### Benchmark Visualizations
-
-#### Efficiency Clustering and Context Boundary
+### Visual Test Comparison (Input Tokens Used)
 
 ```mermaid
-graph TD
-    subgraph OVERFLOW ["Zone of Failure: Context Overflow (> 200k Tokens)"]
+flowchart LR
+    subgraph BEFORE ["Standard Tools (cat / grep / git log)"]
         direction TB
-        RawAll["Full End-to-End Raw Exploration<br/>~1,291,706 tokens (6.4x limit)"]
-        RawTab["50,000-Row Raw Table Dump<br/>~1,176,414 tokens (5.8x limit)"]
+        B1["Error Search: ~167 tokens"]
+        B2["Stack Trace: ~170 tokens"]
+        B3["Git History: ~3,660 tokens"]
+        B4["Broad Query: ~600 tokens"]
+        B5["End-to-End Task: ~1,291,706 tokens (Overflow)"]
     end
 
-    subgraph WORKABLE ["Zone of Inefficiency: High Friction & Latency"]
+    subgraph AFTER ["lazy-read v1.7.0"]
         direction TB
-        RawDoc["Full Document Extraction<br/>~86,799 tokens"]
-        RawCode["Whole Codebase cat / Read<br/>~65,352 tokens"]
-        GitLog["Broad git log -p -3<br/>~3,660 tokens"]
+        A1["find: ~103 tokens (-38%)"]
+        A2["trace: ~144 tokens (-15%)"]
+        A3["history: ~90 tokens (-97.8%)"]
+        A4["find compact: ~196 tokens (-67%)"]
+        A5["All Engines: ~8,588 tokens (Fits Context)"]
     end
 
-    subgraph OPTIMIZED ["Zone of Optimal Execution: lazy-read Domain (< 10k Tokens)"]
-        direction TB
-        subgraph CLUSTER_ENGINES ["Engine Token Footprints"]
-            E_Tab["tablemap.py<br/>~1,534 tokens (-99.87%)"]
-            E_Code["codemap.py<br/>~1,468 tokens (-97.75%)"]
-            E_Doc["docmap.py<br/>~8,114 tokens (-90.65%)"]
-        end
-        subgraph CLUSTER_DEBUG ["Debug Helpers (1-Shot)"]
-            D_Hist["history: ~90 tok"]
-            D_Find["find: ~103 tok"]
-            D_Trace["trace: ~144 tok"]
-            D_Broad["adaptive: ~196 tok"]
-        end
-        SafeEnd["Combined End-to-End Exploration<br/>~8,588 tokens total (< 4.5% of context window)"]
-    end
+    B1 ==> A1
+    B2 ==> A2
+    B3 ==> A3
+    B4 ==> A4
+    B5 ==> A5
 
-    RawAll -.->|"Token Compression Matrix (-99.34%)"| SafeEnd
-    RawTab -.->|"Schema & Aggregation (-99.87%)"| E_Tab
-    RawDoc -.->|"Outline & Slicing (-90.65%)"| E_Doc
-    RawCode -.->|"AST Skeleton & Inspect (-97.75%)"| E_Code
-    GitLog -.->|"Function Line Range (-97.8%)"| D_Hist
-
-    style OVERFLOW fill:#ffebee,stroke:#ef5350,stroke-width:2px,color:#b71c1c
-    style WORKABLE fill:#fff8e1,stroke:#ffa726,stroke-width:2px,color:#e65100
-    style OPTIMIZED fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#1b5e20
-    style CLUSTER_ENGINES fill:#ffffff,stroke:#81c784,stroke-width:1px,color:#2e7d32
-    style CLUSTER_DEBUG fill:#ffffff,stroke:#81c784,stroke-width:1px,color:#2e7d32
+    style BEFORE fill:#fff5f5,stroke:#e53e3e,stroke-width:2px,color:#9b2c2c
+    style AFTER fill:#f0fff4,stroke:#38a169,stroke-width:2px,color:#22543d
 ```
 
 ---
