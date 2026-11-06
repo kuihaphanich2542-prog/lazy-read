@@ -1,5 +1,13 @@
 # Lazy-Read (lazy-read v1.7.0)
 
+<p align="left">
+  <a href="https://github.com/kuihaphanich2542-prog/lazy-read/stargazers"><img src="https://img.shields.io/github/stars/kuihaphanich2542-prog/lazy-read?style=flat-square&logo=github&color=3fb950" alt="GitHub Stars" /></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-30%2F30%20passed-3fb950?style=flat-square" alt="Tests" /></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue?style=flat-square&logo=python" alt="Python" /></a>
+  <a href="CHANGES.md"><img src="https://img.shields.io/badge/release-v1.7.0-blueviolet?style=flat-square" alt="Version" /></a>
+  <a href="README.md"><img src="https://img.shields.io/badge/license-MIT-informational?style=flat-square" alt="License" /></a>
+</p>
+
 Read the map first, then slice. Cuts the INPUT tokens an AI agent spends reading code, long documents, and tables.
 
 <p align="center">
@@ -168,3 +176,9 @@ python3 -m unittest discover -s tests -v
 - Code Parsing: Non-Python languages use brace-aware regex heuristics. While highly accurate for standard syntax, complex macro-heavy C++ or esoteric DSLs should be verified against the `# SLICE` line range header. Common vendor and third-party directories (`node_modules`, `vendor`, `lodash`, `third_party`, `externals`, `bower_components`) are ignored automatically.
 - Document Extraction: Scanned image PDFs without embedded text layers require external OCR processing before indexing; Word `.docx` section detection requires native Word Heading styles.
 - Tabular Processing: Formula cells in `.xlsx` files reflect cached precomputed values rather than live runtime evaluations; advanced analytical joins, relational merges, and complex pivot operations should utilize dedicated libraries such as pandas or SQLite.
+
+---
+
+## Support & Contributing
+
+If you find **lazy-read** helpful for cutting agent token consumption, please consider giving this repository a star on GitHub! Every star helps more developers and AI teams discover efficient context engineering.
