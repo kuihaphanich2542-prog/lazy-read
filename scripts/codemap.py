@@ -1,27 +1,1805 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Lazy-Read Performance Distribution Package v1.7.0
-Copyright (c) 2026. All rights reserved.
-Self-contained, read-only token optimization runtime.
+lazy-read: Polyglot Codebase Skeleton Indexer & Surgical Symbol Slicer
+Zero external dependencies (100% Python 3 standard library).
+
+Reverses the paradigm from full file dumping to structured indexed slicing:
+Instead of reading hundreds of full files into LLM context, generates a hyper-compact
+skeleton index with exact line numbers (start-end), imports, exports, classes,
+and functions, plus surgical symbol slicing.
+
+Supported languages:
+  Python (native AST), JavaScript, TypeScript, JSX/TSX, C, C++, Go, Rust,
+  Java, Kotlin, C#, Swift, Ruby, PHP, Shell, SQL.
 """
-import sys as _sys, os as _os, lzma as _lzma, base64 as _b64, hashlib as _h
 
-_PAYLOAD = """{Wp48S^xk9=GL@E0stWa8~^|S5YJf5;Qq`ySX}@!9Eu`uszf$Krci>25I-HuUNjF`N?9VI&1P%41Wt3M0J8ew`l~EQlW6Y5U<YQydC|U6-u_l+K0BAj%m85RFo{L^s=Tx%G)+v~5`1n@(n$^YGiZ|^yf3K%Z`bD3JV6a1U0)-VMATOd9KNOq1yhp`pW2kYSvFqMKXoL#so(&BysB!?pqh9|=;2m1N-wQ)(dIMebi~_IrP;fms+kjp-U5YHJ1VxLpd{$m7UxJ*x~mnJKPQcNJhFp8%cAA$9DVc__qZ3auG#UCbqD?7r7ia3RaDFZu}cYme!KwUBn;2?Po%g2;>OKw*`>dIMYKv=PM}OtWHH@}SB;RBNS3L^(NX)4Gyvu(=2CZ$o}8@ne4yY>_N}-i&WkQa#@%hhx~Z-!FZXQSHv?HTl>#-Tl;jr(fzAg${a_LTbP9Yn-;9P%C~Gfe=ji93vImOch06_|ju4Of_J3e($!a~amzv7Xl<a5v&NqkdOHvKJ9UL~5MIOJLqVKELqls=`_wMq!yq<%vv0${a_PN(x>ncin;v+D*HTfG^{f=LDOVywfvzagak=&M3P5}g}@f<&L6YRy(0XZzznB071!M7Jf0KdT&jFY@!eCpR-jsIy*4Gc1TbIQ7Jz{+KNeRF?vPe^^)Te4;yjccM0kzP}IHXLDLmuWG(+;Lig?Z6E_25&tk`joS;G*ZdsUQpM~4~-i=qi%r3-lc_9RdcR?T1(i?aS)>xi-2Z4^?d`ls>-u=MNjVD-)K~1K3{0d^Xz5+RH7my?R;TD+HOFLCSk?DY7W#r?HVV+K%z1)I=u9IYqB$$Q&;cb`?*uD<s5R}G^dtSeK(H0DdR0MUT7}<-{Ol_o9^i<MX1N7(u$e;>6d8<_|x_}q6ilrZt)}Nzjj1Px*uG>?trP*78K#IoAh{+Qeg;ZjgBYlGfoqM46!=9j^0)|z!di`L`;^iPJ<n$h;#Vde8(r(pRvQbkjBRkX!Bx{w1WZoE+AWwn$$a~?_biO;wA9VLb%2Wa0*yI>Bmo&Ka&KsNFa_?Uae8<4^7%{ZwQt4lktr&_s^O;u&eSIrCtvX{|S(KIt|{=ve}~(@Q;@#^w5o=)>RDfkJSOe82`5NdZg>jUrnpK9q2ca;;e3u|9`^yHMyEp(>t(dF@XY=Ms*FbV3e^gH%l;FusD!-yK+Li>{+Atuqm)UgdlFGNk%z4HpWs=znDe-);*g!L*hyU^c}lhF`4Z0D3xh)G%`LwrPPAsKAq_(Rs@trJ+Rvo|0^s!AsSmDLi=b6*Pe}}=tyRgD-p{AFSu3KF#grrQH{)KEs1Wzo}qe2nj$8BaJ|5;$tAgdm-!Gy5%Ka%LQ&h(cHQ4lX-OX9y$>z~K`}jKZiQl9i?8D{S`hXl`)1$W73z4N3y*x-+3Zyex=Wc8a>Juw2WnHo%ta0bu|?CU(!;f}&0~;J3j%l9ezHZzJaubOd2rBE)B1NL=H>IcM*6Y~*`V$-;C4=_@E|BCSpOI7Y)?A#k=5&|G`!`lOOh)<->cpa5XnjPK_|15%XJLgw(WVWg<jVIlA$`cT33qkP|rTTpXYMIrf8RMAWs~NLK910hp;+*dkB@`fHep~(ts*4@3rT}MA34w;Jdg!x0o~q%am5EyQWlX1)$i_+SoyR%J5K?%O6{<tI8m`I_|^^Xv2O#Ko7y5Y<_nFFnkj2i8p(_QzxPBTrscXnj4GI;1ZNY_xty{)o#y)kYnjQc3_hr2ouz@08@-fs-8-i(ILYst;M$<Mj?A*17=1*JB)K=N_&mw;9;Wq(P}ayds(1lovRqP5p5GgYzlT3ox%#fOn4j4o<y+YZp1z>B8F|*ykO{U6H(rfqHkNn#=sWzSTfD&P&0fU^>T<jMZ0Vq^+WpIB1|BY?XhUBhqB@zs6`5#lFFcI)u+<yeCRj|9osjvf>9R9ZlncH%2~p`*G35n&FoAL!Cc}9x9{<#R9|jWoD>oFJl0zyx{GHyQd+*h$#Nl(C15X#_*Nx?^zzB4$oBc=(73Gu2v=Sq#ejezF9Kx%f7c}E)@^j>Qc0zUbkC((cU$=1td2-RL)&0V;}2LZR#V!xqpkpY?}R2ay~Iu5C_s7FxutLx5g}>XZ|duQW=7ICy=rtyyMHwyga-n-;0s}<(3FZd^4|R%&n;BLc`F49-bR(Vc6wY@E7xqf1?<QpOR0piRd9kZSB#L$mCXeLH|yW{Y%@f8Y&NI^r|oZ$4TkCs$>z<Lp-}W8La8a!a=3m7R`YB(7!c9+58g-nHxDnh9{v$eI<eu1_RQ^i=)JtT9T!!d{#0amXiwJ^-0(Oo`^K+)=jbXF5*KwWIUt+eXG3|-H!7`XNpH##rlgS5d4+b8oWZ0FpJY^Udq?Mqgdl=vPeD(Xo+hk~Uo@SY$@l0RCmvn!aT9&5FWlM;NHljZG&);bOdXr$!2)6Vlu5vEwE+5fO@`5YhlsCo_+-S0FG?esJ9<+`v}E9d?#;(6YL?rt!VifrX-IpZ&i8U(L4cs9#Sn0MOTNTM0J3h3x<eC&V$WO*@wmzf^Xb|RntkRcthD!t4=6dBe=bwP^}{I^)82q!mRTWYJ#GYVYAZ1ycB~Z~ZoY};Kmyh#&BtrU4O@FEyOl2|h~Ta@Z)TN?mgHc`*8PC%K4DrRMo}qt%OpaQD^W626h9hq&D^vu>;b9)96x7LN%PL{TlS{ILPUlALo`GSmQ*HgR8@4cNc_&917Q0hf-Q~L4d^CB@iatIADxpE(r*=V&~L~>^Av9~RLUXh6tCBSyBpz1waPO_gGcUk!Em`=n%-Y3qQUn%rKG^ch>X{+lfT$@_cyr2Y5-W*08#}MHXsYN?fAZrh$!{WE{xuo54l$K-wK)hFxHSH^R-@fNXpajlTqJClRe0;_Ay2iROvpZQ2KL&jE?S*hI=_c0Kz??*uIjwXnfGXW$Y7MzvKeGWdpm_Q1z{s4Aru>{73TI{|!E30)(V;cn{;=)X(@5umlgdOA6lF8VBib!Y537&9Cm*^^3o4FZDTp<r9is+Ja`0HAySY&a`ZRxhzfyU*-KPxApCJ!bIHbctru>k^ND8M)B!B@ZH<lLS>j)NJ6GFQ+k)sr`Z<!X|;(zgW4?FuWM8n#!{rJ!x<e#<R{3qaH3jKB7eNE)=UpheoR1L#D4Db8d#&s+1DX52kuV^grp>K+Z4SI!|?JeQex<TykvfH!V!F1Cp!d+^e}6pyj{w`+@I+Vdlk~O1n&^b2YA}Y2a#AM-_SjfC<m+rUyot&ZFbw+a4md`_>AD{7kq6M$2Jk(ximB`TnTP?dn}jlHb7@Ro8`))_=j3}d4bSfIqY*xP$k+{4tnI4BbtK_W7+xu*}VpB9*0I`FA%aiYTx4&N1+Vd2dks1HAK^GYC;V>ueS)wX4WbB;0Ki|2BdRx98yfixSi2MqUH=8q+SHc@273Z;d|ia?nLp8+?__}cL3UUK=<A!07^VrXu|#tQFP00lbXG4Xkr+Bmm96XJ6wsV(q{3SOKiQ6{Lb0Y_AB;oYgYbH?1yKLq&0LZw}MOp0zMH@rwDhqGl!gq*g92(Ma+T`Y`TC1O4-8sD1*!U%i6)x`f)({P=X$Qw<KPlWH}!QmRCfc2vcOIUlR@%)0K=dWODQ1l(;T5RB#ao>MARXIcSFq|4NPWn)Bw0Du&5hGs-##I_>dXo&uRuy8&8$1*(W{j>u<|q|ne!N2q-9pc1jVwn){D@8MK@DadvI2!v|Ye(u(gWME@XOFV$V+xXI~81i>bhr2)$Y~#0Li`BLx|A=!$*o3r7UoA4yE!J!*ZRg4=>4REPk2LbM<Oy(gfnnw4q(;9TmPOg|uUPHrhV0)RO?aCBTpAw(duve{MM1#wJu>!Ox$6&Ap_NT+lrXN1MSs;2*Aa?`D)?MWuAwlIZv>v68956LKxut%pg$w(3Tm}+;z|;LQv|L^awd7TMYnC&dHcKXnJ+Z#F>3!-F3hqVTVWB~G^Oe}Bzl0ox#iUK4)tT;K)6(GeV=x`-Nb%NHR3fp5#s88kfhDdjD*#8ASScmNN4h5L3fuUwRC`+#QJ@9iu7NG<w5eL^VPjRI-sQ{p%d#~m)Ia0e#{Y1XQ3Uc&;Eed@$=<FueX$Sd23bvEIRp+Ws_4v7f!xXZ$}NXsTttpKoTEUYX;^{C-mX|!X4A$81;isM;wNXJq7&M@$+jGgXi*`2*LKZ5GT4~3j-~<v{g~|5z2-!J5z6IWsrThzr@(d|9yJL_&@cdL%UgXHPZ1Di`>$7nB0->&G~1V$>QoZ4MuG^-@~G4xnV{@3!N|;1?+U+2fZ6lThi}dGqWxx(Lrx)sx~m7@xx1c;ae;J`$;%6xl(Dt|FD9sB;}N`J4-Q$L&A=+_BF4gdyUtV1Lh3=+a=QB!yqvXn+tVlx9<KRe0yc05vx<@Dn#fqH}B%`8TT^VFpnXO$!nl_HRwg#5nu06>~jVG6yTYG%&oNwXxf$6cJmorWAVz;7AauI(dChEmdLs*=S33x*%=Ln53deR@XF1}+JXOlt$u`U-b>_!JD7#hA$X^14|P<=@U8o?3bUBxt*5>o1AFmzSa+eu;O24{AT5ON3v-qeP>?QTY;OXO7SqT<??Nm&ZHev_$!=ik;&aN<+8QQ@iQql0Y!;Ht^!sQy4FnxFEvW_)Tqyp^Y=AEonldbGwUiZ&&)(On{|1w5A-eP?GgBe$mbGiY2n<iZ@=~l3-H<tZh}QYzV9e9Q3W)9|23OnnZ?_gR(F=m~G3&qoT@OQal1*cTC%^(ci}K-Ym=bdPcLB2`(-c3J@DsJB=wXuFUatPzG`8}2Mp;H{%Rfzg_6crv$*PLXNW&G81OGjjAy7D?^IpoCe_%^7V_;;+U?XGe%75w?D+x!suej(O^nCv9KGAk%RXK4uK`!gbbeito-6UL7Y`76$n(=>m^p~lIC864oCx%jd2|qLPUb#&55hDooj)DWy{0AFhjrMBRz0!JVe2lZP5&%7`cT&Gto2xU#xtySNH&DgSG}sBQ;)xmKzejz{{S<DgQfwJL-p9uj&otj*`geM!H+BIwR$NzIWi11K;6;9^17Y>vIa>RXlBVhi+*r*POV{Daq#Kn4Isob*xULX|Ob-py4rbX%V|Rc>fWqP|0xCHu9uI2Y_ngpviN#dL*#Eu0M)aOS3Czn1-u2tYU$WFu>R2pl=6iDB4Ll>p@5l6IC&l7D!s|3!-5~;H+a+B}WW58Bspv#-|4Q(cXr<hq2%K?eKu9I$niW$N7|!|B%@&OXhN#HcF=|w?=%1<a^9QfWOSJ#PZOU!Vfld9jO+KH7H_Xz=I*)KwsL#Q}5Ty4ViGNwgx`std=Ed#DkTQ){5cfKO17n1RpmpdAio;^TTs>g~m&GA(x4I-S7kSN8>G!))?rur7F+h5gE$nO1_Yd<!U66FCaFeR=d^I~&W6wXCD9OKUD`3#R!W_+R_g-53!uTYTDg70mPd(lhujAuZvQpam+d3l6EXP|a=$BpsXfFeI6T7N95Gi{kbf&3~AXDSh22++45bc+Pz*yOW4$mimDDMN><?oI&01B-cWrR%@?2cx%y1{lTnPFvr0_)Kju4#t7V9CS_b~$jfP@C%E2Lb>yLi2c=en?8h*>V>2`-a3)qhd0iaJ+kp$xTYUy!tzjLJ~~5B3CQCcNo;9?UqaALwkkL5Q%-4Q?fmI-5+Hq+&mt?skt9MCl#fO+XRj4?`)I}P8>9u1hFA=J@qT$6@@<6IE1>WmV)*{JR$4@S|TQci~1!H|H5~|ybFw*yhnji)Kpz`AeV8PtMWwG(!-EgVwM=wU!*#~Ddq(xvpY^dJHsOB*i;Wm@}zS-p>($@{6r;j&c(;@_BVO~Z0&2XsctZ&NRzF#xz&{@bvLWxX6?N9B8COd8YO@E)ktc`7J(5&ZasNR_@A~5#5kj_6tfm9r~A1025wY402hili;Z1rCZ7~Z_NtJ;s}GTd2|uii=Z|ArEAqp(c~t$dvY@w(<-XK)#OZVx-*8p(XIxZPVQv}**c75rg$iQ(XGyP(cEPY(p_^VIDmOSBW5V$gLZy{iq1<RDiGQ4Ut(B-!>8p4>Ao${xs18E6F!xmz!S+)iH$)1Mz~y|_l8)imdZ_;(7pSt)DOmYs2VE!iiFqPjn91)!-UmeyQM8fu8*EL?1<C-mY&R0%#gu1mbL#R-7@f1$!<%_sVxynxe(Uk=>EL_M%4IM<f^3^kA?Kj)tgau{)6vjCJ2Mf6rV-Ux0C3oC5qMdC?P&|_>$I3(O`vC{0$3qJn;|30c7%=YJe+@7l5=9$vSEauu0aeM09~8dKbQfoqu^s9oZ(YNV$coQZ}BRec@_GFjL2&<Tiz$N37?6Wg_Z4cY2^IWKUp50kd4TpP_4Vv35Ps{T!SN0FPxc<wMhVFClA6AA_(TvFbKf8qHbC4X{{IO`y#DgCPWHX%=etIVbo<iLS4~bz>JQ-U$8!Gw}++2=eP>Rv75iZgGzi)7g3-q6b<s#MXPcp+Spu#u-T(7j-oxLe%n@<jG<QLaWtK0W6RWhQCf}F40gw*hZwGe5!m2olR}<`tQlN02;*MK7)xc91F6(}@31T^VE_*4VrCqY-ZgxA$vSIL{M0<nMA5BwXI@0bYe2^oE!wQg-2fy3{HnM)?DuiPwwyaa#R$(;8*v{i%MQT@p;jjdc-nmMaJrg7Pc|6r+B$g&TPNZe-PHLUq`oJFst)gYr`bGB-_#eZY|P|M@ri8sn3AOhB^q5s9jlz?jX0y>-vPa^&+POH9vD3OH)lhUSnB7v)Ex|Yyl<YB1(dq6+&ADFS@{H8I6)pW;V_pxJVsI~z&F?j#0t$Q^jD{T{0^g;fiIz)i$09qQ*x5?I<}<QL(B(7P&Nea@D0F3J`xOJ-1bJKl`!VS2`^MBmN`h+hP9VwnCyN<eIZ01TF(c3SUp`j{TD(dQ3~ZKlt?Kn`$*lZo$6fw!TiljDglO7u;hwetPjHG6gpm!(M%E9tB*Lxd5{e%7KJXFXe$J&pY{WTSJIf~U`N5}(@qQ(pWA#xXQsG^C!`iA_H3;6)$=Yr52J>zSH0lASO1%$(i1wN%L_-yC}L^}2)fH<@3mNeQ5s<Ztdp{Blu_RzN$Y3{&QGtTWchT5VOO6y>fka{k0T<s(J{NLWOX}0@A6R4c-B?Nog2I5I$Z4^J$}f)ov^6(XZ!%{HcRf){Fqq2-2GzC6(K)GQuW1OVlCcJ#OE3jGZjX=Mut2`^Ts(_FClEek1#JI*i%X<JGc0>a;&`HrB;|@7VCDtuD8M>iP|)AVBfBcWglhu#eBPtpBJ&vab1`{3Qx}!txqJp6&RyE;H14m+(B})ZFS}!B|$)%R|dgY;SL_`2r8U}zr`i1NAv!Hlqegdt+HFYAhx%!OyPr~HM8ypPD5}fe+?W<ziZqv-p_K8OlZHPDs#4qL!J`ZP8J2cp0eoHU~;pd7iMW#_Tgg*iU#v)wIE7l3vQ$InkJ$w>|Z&XNcmboiB>**wdP-}4o%B!!Fl#v3(h12_NJL8l-cNiA>-_l&|*=*zIeV$d1YRcsZ@r1V?J9DZXt}+RIcs2u4Iv{0m{GOz{?90PxAqk8Dxi^`<UAyPw^>Ir|YA-RPdz=VBkDBPDB!bcflL^kbP#%AI@|9PDKpr1x0T1JoubB7vvg#-)$;uS41BfLO%`E1xJjvqiLc6rKN}oa}B^sVfzji)m{cbgOIqow2x%L$YIJnvy$5@$NQUsI4QBi)PHK3b?YsTsegq|+11vIw#`<)Ia{3f=_I#o9EklWz5i^mu+G7Q)5q~7&qHK%YmDvrU1ir{yr(8}t_0<zv^9lS;~oc<Z1Fw9MU-fYmbvix&Y*wt5(_}PvdQkGg`*KNU<*7pfbJofCO|k)03QAl;6JwB@39K5H}S@WJQu*?sNI!?@#2&!n{|ed=&t(JrEq>2yShO$@!g_XX<oFjXul(1wpJXDY$wg^h7iaGGesLy=-RM5?A#-VmD=*+UT(-9+;k3hkLG(yv@!w<MEzS?DhCA`i1Ouscaz}&STH~jR?Mdk2xriEkGf|{eOeuFl!jXUCANhXr#o(uz==CJoA>r(?sgnQ=4{%Kst6-jBXraZzA8NmG2ezLMNFK*YxR)wFqFSp1z&+_4nQ<tTuDT1xC(82;ZPWoB;GW??LoS2a41R{UnpfPTBnDEvc#_ZhU5z*wG1C|UM+g{orzWaee+gjAic(~6=*I@VNzU;ko>u10^F<jVPBS=t$PO|@8DRgODMkvXxh02>KpB!H_rZ0W!7(EYbO-EUieFKnz@GNB+`qW$Yb!A>9TeaH-_pUnnVeOb)tMhGem|r5*MOTrv-uVi~ezfElUMRi9+o3w+fnw=1WGv&V>3Ayeq{)0Qm{<U<v2>C(~W97JE$3_*gYLvcl{!$4Cuma&ckspx5^tXl^-#nUh}u{$NK?Fz4kY5)R7V4~V$6Zt&~h54sW|QHbP&uY)tMB2&^)QlH_at<KX$7h^RPky=h4JUA5!dtKiDR}k6sgu-a;3mlvq4IVpvKq@#HWEA%kOignua-)xY^JstH5>c`}v7ppGQG_<B7)JW#3L{7$$+<FQLW&H{Xzgu8kL6|%EM1Q+izGgUM96uwBV#3i>PZZ(vU0{KJ{s2PCnAucz)^M7Sz;xPtKD5qgB_Yx8B=r7Z_r`IBNQ70>ijn#LHGk@rV8)d*$o0vBu+qYQep%veV<?s^c}MNBXkLSae?kcVO@d8C*HM=u9MmT=pZ0KPOeICU?0$UkqFreK1vY_LmJA+r8)vw&hXrfG@?)@12_36hJJ?NttU3s7UMiHX30_$&(RZx7Fky-*;6UlqiXaPhBdhI!2J5r16#!;Y(#b*uG^5dO2{C^G{yLQ<SOd%)1UP_3<f#>2SGL+rqBsxL!cq}?&lygL9608rK0xr)$YK60rcTiPU0xW?7T+?#<mRd!@zfwE$GbimeHuD)gVs-$Ffzy^QH-GWa$5H8jz$xCJD6;rcIwS=;lH|Ry?-JZBZi2$AEd0KMSp~z2M|3OB%;YM}P=afYj}1h}|5M8%~>dSnH|6qTrJLS*T1i3X(T&hyy<iur<A2&03pNdlCturF`$L*nY_PW`>obz?Z+q7xh<KEMu@~MNCB6r59EOM!UutA>^K!gRAteSo=H9eOu=b1k}v@pb*BjQ)!<z`MLQDDJWbg4$sZd;J@D)WnmRB)@^byk}1Egu3c72Akpnyj_D9Uws`}-&Im{Wm-jU~YelRV2LrN0RGI>KnXyb%{_>aP&=O1zTx7z~1YGx-Z1CL7j#WtzV?1cb{=Sn*v<ztdFDg!Hq&^qmLr&vpDJxT6-E%~S$Ukf&r7nzUT{5}?I#63PnB~BcNSlf}yzn)xqO>DrBodFusKMAOoD*#-9t!);7+&K}%Ng5G(NwWTT5w`^hvZieZ4!@*Twdu|T7a(F!u`2`%vq0ED8g>t`}u;YQR*?_B<<&P*%{kEv#+$;<}xs)y!>QgEIW*}0tc{<OKjgQIZxZ|bNsxu@t~?J%zVzfz6-X5*zf6f`&X(k%)ReLmZ}W3w|&ry@hc;a7q&og-TI51xPTPS-_`y_$06}ubP>^=5u#~O5PA{Pv}$Y+0P~ZSPt0EFos+)GcYMBpO}1+E?^~mgwA2Vr$NU<f-Ck{GIMAi|n@&17F*g@+kytiafjf)jLgB2XSUhu^5{ISmahjw_4^eBe&B<L97L$YO*ttg;#6T~|C-J<=QgS!Y6pNQ;Ck(47d_Gh&kN_N9s_$C?-GA_szG|`sPx=+aFY7#Lf)E?#(AzkfrBQFWe7Y;0gQR=vRyqompUd743PmV`_PDFpa@rVgda_t+ZFbEdVA%i9A8JG6@GbGi-tJli^g-BSEh%B2(8+x=J$gH0rMT7@^|jbC9`f-PF9%MQ6)<AF{-J+0;%ow*#Bgug2M6<nu0YDqdgbFl@@t&oi${`0L_6#kTHgIc>}DgN{>5g?UsR#p6$Li5{ql5{@d8dH(bjdu-_fTu6-4s@{!e>jHW|*;D9<s~tQMV18q?6)&>b7)$!H`;IOoVgdr4~eN7XvEVk-zKl$8K8h>9CKbyUR~{h2&#LYaL2fc5AphC$gLRea_Nh*q$#_VD!X9^GU^kM^q8`SG>vHm*alK^Gq{nC^^TxLMRI?(@g}*KI+peVT{i|7Mg)#~%RPJ)nJef6z@Bctty<CQ6qT^hJ*Eoy&3Rr5RaMoU?1#=NcRvO;6n{hh`bym|0P5N}dVi>v}j<m>r}ssU9YitWjv}t%bjfA^Rsn=-tFy3eSUR;+&)TEIL^>2pa5fwg2+%s&8TUk2yonY`CsycOy7FiaqFClIV6joqR*8TU`WyWs4GaxxmVVkzRZ0&wq+-);y)qzxb`=x$V`3WBciV-v2glnY306ojA$(+Y1Hf1j~|I^w6syZIO@n19(e3(%(z!8Ag+Lr?sQArYBVp6({UVFr^C9=pq=Is`Jpgj&Jyi#^AqY^z}@4GvY<_j8g8ty<LX0GxV=)pU~3p^aq-~LZL>`p~R}t3y=Y1prKV^dLBn_Z|cbR|5>EYLAjIn8nDNY+*=+fD9dDwk|<6wg8+;SE_rB@v-s~z&>+#TQ&Casa{=90ErSk{lA>soxu5>Mc@-hn0rzzD*w2$zmT)a06_Ye1f$bUyzp3MLaO45@Dt3t2PA?r>&Cd4>#l*!v3Q?z(TPf5Q=WA?7&IWXloE8!aH|2&w^i-Ho9HM9@(|7rl+f2(bk+Yg2ii!?kzH3jj`V30O7_fM?g~;LC30+bO8I!*3l7Bb9Mi~#&tjmZUee&w6P01bKyV!=AR<~o*0$BkX?BSf>95|g<`K4d#+0^(;!Z(%--Z&a!75rLQt*v~ZMC<pX7hiCuD}el5FJ~-kQ7c?=U}=m*N8R_2(NAlh)&y-{%}kov24mG0Vj{ss&t8+#@&Hgjms9PUEn0*DI+dk!l%`__pSP<{yV|zW>@dTVBg@9P=s8M9<=FG&MJ~;%C__0o>BEwJ2i8eqbeB;kCOXmeoS5oe!P$+q+#E^UX}cXN9Xi7$v%r+tNwEdYrVB>Y0_In@46*Izoc|f<gq_D#f-;cPUJWXm+Iv)1gZ*cBcAQXhhkfC-q2@!bNvX6u3`Mb`%vWz*lwF>Ja~CBp%+Rb#Bf%%#MC^&-J9%cKUzOSK7T27jmT5v3N-J1MnOk|VasNmjtDy~%Yl=vvi(N-Qkfm@Dtq597GJBanuUj=GKTm*Q=eCvN1o$F|M@9iQMDmUleNk?w>l|Z$3qhePvuD7SD8%tTiCN7J$d@>A48j~`Ko);8Xp|vH2G7chc$#p3K(tdzhIQc0wBGP#IW}=-md}gb1(gSw%4{%!B`B3<^ixwAAlW18EYBDLe|TBJhVK`T*o^;OjiDy+`%5_!KR_LcNsp^E$J|1A0;LlJ;|dy6IOfv&=Au(yRyi|ddgH9a1Jj=v?Lp$4CzDX>NH*ev2_rbb0HwxgD4&%3a41#O`t=)91f^rt;!BL{Y0oPuZcXaXQ^xOjXnRhLQ$f#zp2iClSrTc5pjy)L$MHNPr{$@jcI)<h|D>XHN(tMVbscT!6S^7LYL7Ng**kP83fg1!_ja7Vz972$Adf;`Mh9aVJ$CK@O=pEp9eZ_nw}uab6botAY-H|X+7C3JY7ia$V`Q);C$Qa-A)8zKmyM>6=W=!w{WH3&1D#+LOsk1S7`Rn*42Cp%<&dKC{igGwVUfVS`Rj&eAUEf|l8WIJ$iIf|O<_@*)ixF(_c0JMSs%23DXW;6TRQRkHBl&kYI|(N$cMXOC>EYbJ=H<U#WjxWWN0@A`~IGDDJB$CPrARO@(3x?BxW?Rk@t57a53pg?PNE&pjv7(<mM1E=GdWwz~`_85xptcvrdW_KCX;$i4v1KYRb5-SF;R7HAXS|ME2MtA}ErWC5EPqjAjDvWGBa3{sG|xt>m{*j9hWETU9o5=ufLmc3^=!4CBG^5s7Fq%F-d4O_1=VGF%B8@#L1uf&bv>92f`{TmB<1T<0pX>ETe_!ha4z&~k_CTzb+Ta0+7{1kWRCGxNPVG*%tDWi_z6R0`Oxzlp^%jl23vO+`LuZN-VxbaiH#(+(Ak3l(%C@)uU#8#y0>HevrTTjkE*cR8kAH2hG`sdmrfO3^0j#MjH?8^b5w%d6`m0F)(*0>L}UKQFoxh8q$-xCnbuyO)*?RlVHwOCTuRZ9J<c1t)tU+Lr);!Ee#DrXbEzG9R$IcB~GT1RHA2Q3AJ6D_u_U#f@xFL4RA;)(TNVC#r3F#2xB&qv~wa?7USuP?4F^$21c7_%~^2G*Xj=dKuij7JDybK*5V9_HPm#9mMG`t~GOXl}~>75APs9ucw}<*5E`9<i>7?fsF%J9k23{G@SBwmr|Xd)m0;(TYo}>Yijx5GBos)qJt+i<spE6xhz)6W6_Nj%C?*Q`vj&f3;1|#`nDDgLnwF&s>y<xK8U{TKs0H?y0b@xq}<RbH~BnP1+9e}=gVh_Iy|=q5S^!A8@cxq(d(JDoZ)~h^0E_-=o%hDO!m@6b%}*doJ)FpNAXPrZ*7vWBJw%Zm4REI<L`@#w<GW7@+@l7YdJOBuERq@IQq@rsOo(lsau<7dqu`qLj#(<garUrg4I^%+4=f-i=_z{zk^Bhi@RyQAPx%4XRTA3{lpF@hK93%nbKlvebbVHqV&<9IjSSXu%b%3_Q?hh7DlZiF3RvP@&!={j#V6>vrCIlul-KqgKM!YrZ_V|Xh=_`&#w+^;vZO0K}Mn^Apf8IIDmeLPP*+KXw;FpXJAqeV}{tNA#OLEp~7;}5@<r>$~;kYM3YiOC228BjEAFEfL_y<KG&!ygi&1!f>?8nb3ky-SFmG9m6X5|gIK5CSk*K_GcDGu0_VjI@<jM64lZ5p7?w^Yh6S&4e;K8W{g#M}hcD>+^JL=5go1uX&Fq)rHKI*T;qquJz(vE0li;Ij<NPLQRjjj4&mkAI<=`2Gt2;=eNE@Mfnbq6ZiMUOtKew$q(!!I@yPEm_frco*`JXGRy#y-a&TL9@E0a>)h^Mv8o3ZgSZ*1WL_@F0KKl-~pr<DZGl8YTXuvbfd46yTA6h5rgm4q|J7#K;bd!slr{O=A3Z>9%138kgjpO@}tJcpG!{}B%RN3*RR6@Yw<cSUKo>L6i3tgx>asb7kLY!5qo;tW)?=Byh9&8lyiUSYHYVI``SkMxq7n|TfkpsQq$t|Pd^z)&x?UnC_Jf>4lA&n*zO8Q*msb(L?yw)u4L#51!ei&;hl%S-x?>%YH^-~JN}kVx~;rY8{PBvh5X1<#?wJVPAnEucfqVp5uyF!dEE0n}4PJ5KFINij6`Bc_fg`$K!>W54Ei`h*5Nly-xI6aEbA3Eb=IEh>5#8+P$S{sOv;QqJyN*Rq6u`9L$QjA|%Qg-ItrzG=v}F-tIoGlZKzY=B_nHuDPjdu|+BrF2Wo_$0F&@D``sZUZ<=HqQ*+tf}F1@zmUeTyqF5)00(f(V|hqo7>H`$t4o28+L~16@@rhhDEA{e@{-4SPLx8fTtSDWT*;_-p;Gwi^DQsr4r*tt&x!-YXVCwnS`U<94!3`5hfl-87}T#?gS0JT_wNdM{ks$p@PF9H~z}pIsz&L*FC#@Oh2E_W2;n~S^GiYp*E$9dsp?=bbalJf;cin@EP2#nd4ZW=GeoAVyGp_xlU5jh7vuWc(0p}ZTl2&nr)AnT61~#?7?`BLoukpO4G8#A;dI(_?v|&2}Xd$QpW`vTMX-N?LrfTb?%aiAX(V9JJaV0#n2a(q|8-Y`e1$m?F}lLm}v2ZB4kL+D0klw8Zkx?7^XlBE5M$j@R4Wg#*7W;Hxd;kx5pf8#~E6dugT)OXGm$rnI-7{4&w7aS?TTV{lhf#AumQR#+3t-|9I%mZtATIi-XI>EoS)WT)sOipzl+-;o+(tECzSB)AE1fCXkiS_S*<46I@%IR;N9NRHR#_kt3<-^SU176U`BMz-`V^@EnA7&jX~mUX7(W#0f%zO}R|pSkR8;H1g_v<4}6RrT$J4NK~?Dl@R$quq8HQ;=+LnT~gCVQzwV^I|JU!q0<7L#<^GGsV2?={{YKfWUXWMx+^zp1eqjg;~*BfuZRE9cS&&K_~mdL+99jp6Abg|hSd_BxZN+cTF(O4ck6<veqtF)ne4;F_8$m1S~o$-3#5bA4jc84p<Z_AR7py744Mj>+ou1ahv*Bt_XfXce@F|@cN&JpY~Y`M=e)ilz0EohbeQ0TZ-_d@a{PICvEx<Pmi9a_C_<>(gyE>oSN(KpF5#&bZrS8$s3eMhYD{UfI+o2R`$U}iPL;_rnq<@S<E3>vDC%X1xT#or?tlI4J(Ue)gBJtRnJ7ULaaq$16tPhf{z(N9wByc2LD=Kv%nf7`X(>dtzJ=A4f7{mqC7%h32C849a^waTR2ftF-(|m_<YAruUyQvil{qCmJO^gu=V*k`m=#F;>WUy?>u2mxE=plcE#AL+8rul+*HAY+FZngR->OOPB_Qnz5Qe==LYowW_*s;Opvv>sGj)1bpAL=6>3_K6a3ddg_-R_SY}rB}1RPX*N3ApvhJR4;-4`IyJIE>ebns{9W_|SK>lcQYL$1$d`J4P*2M#w?o#g?ZOu8gAw++=?JwxBeOfEIMInrDxlf?Ec9y^C!lvr;sjzdsWVJXsOzXVA(!kusrn0hypszbOzK+pO4BlIfm0>S;H)-FJnSL40QG1VCQQR|nEWyvq8w$hfG!~Wuh90p~v^BcS48vf#D8dYPrUlexA%xa2StfNQr#v}P5#>w5X*q`x!Lbi7C8)WRGdzz7KgN$@8hfZ-Cm@Oa|fiGTQF(@igk={zFy!ecUHmbeuvadzitqt8y78A@FqgC68$SXB$>dWYaC7neaJG0>Sesl)6tvm^>wHJ@met;Git5HbwREt{MFsQ{@FOW`q9Bml)v9z5mU<r)RoXbT<z-WW{RVDI}!^Ln@vU0Fym2rT8?_&}}nOJo>1OQk+pyaJ2R)8GOK`FRtuc~P%5{vd&GP#BKz5SbCYxY*Ra(02$ZP2HV6Tg}plKTrJu$I^>S(&pj%lj|<`=ge?2KYF<8o57*7M6TbWmLRd`DCXbBrw+M@N5+4W?y=7)D%Q8c!Y{oHgo~MrP+!f+IGkO^pzzLi+Yw@j{LdV1#<uYI}!AUG!=bRl?uuLsp4oiaYZnNcj(ZUzbWXvj7m`++$=n=KS$1!4F_V*;`YcJb5N>!?0;OT><Wkmo-KAx{)GmEw6IJrLyc|{Z@ExJA&ghP?I0|ixFvN(upR@+vKoqBuOBaZmm;ny;$jmc@8NY#qEe1C*ioZM7f1lA7oZ|J3EsA4;>u|LU-_7*W67O}%IZwshc?!*s_A}v;r5fTLha%YhB2>0DH0ZH<K7n5^l5m@#|#M-h5@d~rylia;cwyKhRLSVOts=WjX>ICOz^4vq8%8ms6l(Nf<k&2ZiZ5g$N*#K+5M<Dl#91I@Ki$|<^jyC#^gI=R|QLlEboRc%2V9r#H}QCSB-ZA&mglzK^D{+4j4=t?=ha&-|%&_)N}5<R%fQ(1Q;ZQ@x7CCC%tQE1;)gGv!PBm1)mk^w}uwB;lNN&d3T<;8}a9B8nE-QnvW9l4Q1C<+cJBZJve7;wd)dom4g%O8#p6XoHu7>XdpMBf@@tnP~^k6XN0S~PP6E;wzgjd{`;ZZ5xFUH`Amz7wN%S!5fWDm*Z=!a79=%vgCgi&Wf*qgC%Vo7M6txd3S$@K3#{aypgnyIY)jI^X9p{Q?eZ}}UWKVH*VgfTjajp3Z@<GQDT9KD+{>gkdm3*I%7Ft5c|}6<4id5Z(VJ$lHzWCTIqoJ~-$PBvuMq<en0-t^*d|lx2X;e_>6;_dR_m4!H6JbH(7J4G|J^3QXhr_-cN*}0!*w~kbMNhI!fE+{jiSe3YRVQa8%5nDump?-Y50*c1QI>MFHq`?Ns$*Jsw4uW?WJn8t{7g#%%ZY%i>_nh6P^JCP8-L}AdGUo#5R8EdVO3o2RLIB1RdX#+%Oo#Az`VJNlA$o`w&6~m@9m-P$Nh$Pa)R{QP7QUg-1xg`Ms?Ys|BVhNN9|INsK9btFdEJ#_k90037oPMBx09%%b+Q0ISg>PC9ePW3q?^4?^FWymyRPu&}Wl=L|$o7EH{ZkvwXxTliP^<X{m<Po=J%X20A&fUbE@;@WN8m<kPdOrNsix<cSkzE|f&2JDFDHD+}DuGxQ(?z_l?EXvq2l8(#wh|I_3R@Foc@u`B{VD=QyI(T;G$POR@3L6+Ot*nSH%=J+tD|ChyWmPIU_n{D!b(RcnlWI*tOk@M-J|tlkZLJS*>;_c52f3zPZ8q-z1{lkG;(Q<w4kyA7xveORquxHBWa=`fte`9+RNkX?^UW1o;|2WI&6%>CK!o)LC4w*?2*0cazM^aAmdv3w1RP{NvE&kDTs}5ll-rseEaiE*<VemJ810o07ujz?pFovCvI$S1xQ?D=gx)1oCDM=f5bk+Vw|J%<RgSzo6F3_vS$pU9f<vv4=p`~}Of;mULXRD>iF0p`CQvm56y9l=BQkd$?m_*?IB&UCJBkWET_AWl{6+6q-UbH!o!G;cGk0ylM%^~nKvx2D6=(kiZ)){QvD{(O?}C*(wgU8zaX3QHta^RL12uD4r|zHC<7afAC@0x$`7Ow7K%fg`0D+aX+yzGkLThC^+J{Hdx5GQ$xNO{NsY6_f2I<1;9sz>VYwm=9+q>*MG_$euQ{9KLpqb*XVd<HZ&Lggo1DX7wQNBnP?^WPB?|xaaDZ4;Dn0S#1KUKQlQN<F-MDJ>q0JW*L3mQ@u=Te!SXt`o5bdT`>TW0QvG}U~bsW}Zw;`f%TD?0I{T2kER_h4lNZ6P`5hPdafKIKw?Fj+<CZJIJIS|9?R)j&G9T3aJ7-9aDLCb~FIi;0j6h*|(K_hgc6?8<J%DtYgZ4$s|-{)p`ut^2O6SOAMh?zRUn|1bxaJddRmxzdJX=9vj~+JkGQ+@FR!3kuU!-F4$Y7n;|`tJN|yN`cT(j=uUCAT(hSW0;%uS>2nc%fv$PPUE39=@ss(mTidIp_|UAPB-xkz8~eXwh={7(OUp!Pfdn8XW4J3%ie1ga3M(B^_F$*RZ=ZqVgmK`RRx!E462UeI-zTnJ>er#jO=utH`Dw@ZkqXZRmqF!`3~HH-&+xT+ARy>Fvmu#u5o><Mb)!F${d1Ek**70tY+HqGdVT}vU8n)`T*^ncW05xypw-x7zqY`UIDeJdv6jSZqz0Xl7R)Xzz}V*ZV|c)rMW*a^qis$W_3OQo9j2k@zz5y-=F!txQdI&7D((9OaC5KMiLgd1$%WYjB38F_M}#A{Sv;E#;=MT(=Un)W%*WX>VnQyN)|H;0zWWOtj}`Qui%ZUc{iT|ASPOp+%O$2)rKOQ<B__30N7Z}6=AW-G>s;{5YyHf%{%$<mp&|*=taC5U`f~%*BLeH{jKv+Q8RaNgG)uy;03N?;t2dQ6gp2H?!j~U3>kBDWJrO-PH5GEF{53qhHKR$45#4m$}&0=`9bUN@<7Xo^IV~3haPO*+@$e2{E=JWY+dic+S_9ESW_jmL9wA$iEXe~=&VAFy1E@Y^!pq>gi-uJzFcqNCaS%55XaDQn9Ty0J@IU{?8!fQl6xB2|5IsbXB<}j5-z=WQ9Q?K#pcli<m3gIQD0Qq8=ahj)JGIT>H}p5o=9T)cdT!1fvr0J3#FoYh84B_7vrOlHsJw3KpUxSafzXRbAD)Vzc#>C9*IWyerz{MqGo(Q%FJ0c^uLufnul03dsC4MC2oe@fKVdKgxhQC2{NATL*Ty}Au+0)VEmCYm{r;+beE*DyFDOoAWqUp$S)K(MuvcdQJ3nEa+CghGT+i6LB4p^j2_&GeE>WkEr<pnn19^gYTn<Z)j&c=pn)|#7XZ)1`E+L=b}li?uB#RsS=)gpRPqyjuXK08?(d6VGY9j}=yF0$0NA52cwQ1dI24wUA8s7-e^2#KXvVx$TV>aT4qJ?ajAzYbde!}Ux)}^0Qjh)eZepS|(V9p^@#glNXS}dIHOxwzgBqrOJp)s+ygw;N2+^Q~0+~T~^cIZi%`}z$YEN0K>B=o&r7Xi2=ptr_VzexSgK!UhUwRmhT7!&DHz_PTX!52h)Pt#5N%fDvYhG=(t8({%j9W0@Npg-?2me|u&B!!SWbs8>HnY~1I@Jy-w(AF9#YrZM=h1V0+K)syyHRSdzHpL`#D*@FRdrJOz6O0>;u=tqAML68t}Xc%>J8-Jmt(8XT6Eh;3HoV6smQKQ{;P#CTsU_fzWM26fK!%b*q6*M=P|?q1g!y@ET{LgyGO+u_3^5|q^W~>==VEuW8?SFm(4e14lPPF_)p>;sa$l{6N1<x`Mp(K7EiWEfx&qmaoa*QsLl%M5x$SHseHcvL(78eD$;e{J2_&Jqn2MV?R3!kdms<buWX`~@>ib)jGM<W1DJ!L>QEl@Dg8kA8fGLtle#}aPpcLvEj$GI?OJ~yODOCJndCZ)$3!Jx8BP_?<P2C&G}okHIRyU^#(Gr$XbqwwPIJ(dmx(N#Yjm%NiSy&{uYYrg>A!JG&48&Nv5GamlV$3BKIi+R-hsB9@A?NC)7rNvN+b`hO*JfgtwL-Q!{_m`O>hI}p46Qar61*qumS_!VyPC7MxBVl-?5HsxMGH%L|@19f~q_QPNMp1k6WkUJ&IxPV{*2{3btPyREkQWuPYM{t%m%ZpZ!i)P4{)8W%gewI{~gZehIHnXz*`723jQ+-x;kA;Tj(VrOTA|ewB{R0E**|zw#g~78r@#Pq1sSAPp97<2HZljH%cMA1Qz!T%hH1T)|2}{n?p35YRqKZ8rxH1?oNUR8U8426(H>TUZ%}A^X{M!NClBmQ`?c6O41C<wv%CeYjJni$7)wBl!rTB0nW<23q<{6LRdkN{hoF<k-aU)}h%N+gAC?TYs#{yH=P}ZK+c|L*Wqlt+@RF{#$@1;(jd0_}*gC>@v!$@1hO%=?6>r@i(I)Ro%DqcqZf>&D14QNy(G9OYPBXWMLA^76G{Qhrr|zv5j2^17i7C6U)OBJQ<h~b1?!i`{3*e5Vodl2eO0;p_S6hk#zzw@ef)&h{IBxdPq%cUiMG;Hn87KX%ez)u6})jMMvS7&4x|ZPDU(qTL{Cc@*k8+<97v>q7JLHAyLGl8xuEFwhxC8U&TfMdCw2qx;PusSvLRx)yBlZt#_I$00H!L&HV!aMobb@vBYQl0ssI200dcD"""
-_EXPECTED_INTEGRITY = "c0ff3f333b9ba5457cee8c571fb37aac2558ec15311b24e14823af9f67768d19"
-_SALT = "LAZYREAD_V170_DISTRIBUTION_KEY_RELEASE"
+from __future__ import annotations
 
-# Runtime verification & integrity check
-if getattr(_sys, "gettrace", None) and _sys.gettrace() is not None:
-    _sys.exit("Error: Profiler/debugger attached. Execution halted.")
+import argparse
+import ast
+import hashlib
+import json
+import os
+import re
+import sys
+import time
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-_actual_hash = _h.sha256((_PAYLOAD + _SALT).encode("utf-8")).hexdigest()
-if _actual_hash != _EXPECTED_INTEGRITY:
-    _sys.exit("Error: Corrupted distribution package or file integrity check failed.")
+VERSION = "1.7.0"
 
-try:
-    _raw = _lzma.decompress(_b64.b85decode(_PAYLOAD)).decode("utf-8")
-    _code = compile(_raw, "<lazy-read-core>", "exec")
-    exec(_code, globals())
-except Exception as _e:
-    _sys.exit(f"Error: Unable to launch runtime: {_e}")
+NOISE_CALLS = {
+    "print", "len", "str", "int", "float", "bool", "list", "dict", "set", "tuple",
+    "range", "enumerate", "isinstance", "getattr", "setattr", "hasattr", "max", "min",
+    "sum", "sorted", " any", "all", "super", "Exception", "ValueError", "TypeError",
+    "log", " console.log", "console.warn", "console.error", "Math.max", "Math.min",
+    "Math.floor", "Math.round", "String", "Number", "Boolean", "Array", "Object",
+    "Promise", "Error", "parseInt", "parseFloat", "isNaN", "push", "pop", "shift",
+    "slice", "splice", "join", "split", "trim", "lstrip", "rstrip", "strip",
+    "lower", "upper", "toLowerCase", "toUpperCase", "includes", "startsWith",
+    "endsWith", "replace", "match", "test", "some", "every", "map", "filter",
+    "reduce", "forEach", "find", "indexOf", "append", "extend", "get", "items",
+    "keys", "values", "splitlines", "format", "encode", "decode"
+}
+
+# Default directories and file patterns to ignore when scanning a repo
+IGNORE_DIRS = {
+    ".git", ".hg", ".svn", "node_modules", "__pycache__", ".venv", "venv",
+    "env", ".env", "dist", "build", "out", "target", ".next", ".nuxt",
+    ".cache", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".tox",
+    "vendor", "third_party", "3rdparty", "externals", "bower_components",
+    "lodash", "Pods", "DerivedData", "coverage", ".idea", ".vscode",
+    ".gradle", "bin", "obj", ".terraform", ".serverless"
+}
+
+LANG_EXTENSIONS: Dict[str, str] = {
+    ".py": "python",
+    ".pyi": "python",
+    ".js": "javascript",
+    ".mjs": "javascript",
+    ".cjs": "javascript",
+    ".jsx": "javascript",
+    ".ts": "typescript",
+    ".tsx": "typescript",
+    ".mts": "typescript",
+    ".cts": "typescript",
+    ".c": "c",
+    ".h": "c",
+    ".cpp": "cpp",
+    ".cc": "cpp",
+    ".cxx": "cpp",
+    ".hpp": "cpp",
+    ".hh": "cpp",
+    ".hxx": "cpp",
+    ".go": "go",
+    ".rs": "rust",
+    ".java": "java",
+    ".kt": "kotlin",
+    ".kts": "kotlin",
+    ".cs": "csharp",
+    ".swift": "swift",
+    ".rb": "ruby",
+    ".php": "php",
+    ".sh": "shell",
+    ".bash": "shell",
+    ".zsh": "shell",
+    ".sql": "sql",
+}
+
+CONTROL_KEYWORDS = {
+    "if", "else", "elif", "for", "while", "do", "switch", "case", "default",
+    "catch", "try", "finally", "return", "sizeof", "typeof", "alignof",
+    "decltype", "static_assert", "_Static_assert", "__attribute__",
+    "__declspec", "synchronized", "using", "namespace", "extern", "delete",
+    "new", "throw", "yield", "await", "import", "export", "require", "include"
+}
+
+
+# ============================================================================
+# 1. COMMENT & STRING SCRUBBER (Line-Number & Brace Preserving)
+# ============================================================================
+
+def scrub_c_family(source: str) -> str:
+    """
+    Replaces comments (//..., /*...*/) and string/char literals ("...", '...', `...`)
+    with spaces while preserving newlines (\n) and structural tokens outside strings.
+    Guarantees 100% identical line numbers and accurate brace counting.
+    """
+    out = list(source)
+    n = len(out)
+    i = 0
+    while i < n:
+        ch = out[i]
+        # Line comment //
+        if ch == "/" and i + 1 < n and out[i + 1] == "/":
+            out[i] = " "
+            out[i + 1] = " "
+            i += 2
+            while i < n and out[i] != "\n":
+                out[i] = " "
+                i += 1
+        # Block comment /* ... */
+        elif ch == "/" and i + 1 < n and out[i + 1] == "*":
+            out[i] = " "
+            out[i + 1] = " "
+            i += 2
+            while i < n:
+                if out[i] == "*" and i + 1 < n and out[i + 1] == "/":
+                    out[i] = " "
+                    out[i + 1] = " "
+                    i += 2
+                    break
+                if out[i] != "\n":
+                    out[i] = " "
+                i += 1
+        # String or char or template literal
+        elif ch in ('"', "'", "`"):
+            quote = ch
+            out[i] = " "
+            i += 1
+            while i < n:
+                c = out[i]
+                if c == "\\" and i + 1 < n:
+                    if out[i] != "\n":
+                        out[i] = " "
+                    if out[i + 1] != "\n":
+                        out[i + 1] = " "
+                    i += 2
+                    continue
+                if c == quote:
+                    out[i] = " "
+                    i += 1
+                    break
+                # Single/double quotes in C/JS/Go/Java cannot span unescaped newlines
+                # (also protects against quotes inside JS regex literals like /"/)
+                if c == "\n" and quote in ('"', "'"):
+                    i += 1
+                    break
+                if c != "\n":
+                    out[i] = " "
+                i += 1
+        else:
+            i += 1
+    return "".join(out)
+
+
+def compute_brace_depths(scrubbed_lines: List[str]) -> Tuple[List[int], List[int]]:
+    """
+    Returns (depth_at_line_start, depth_at_line_end) for each 0-indexed line.
+    """
+    start_depths: List[int] = []
+    end_depths: List[int] = []
+    depth = 0
+    for line in scrubbed_lines:
+        start_depths.append(depth)
+        for ch in line:
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth = max(0, depth - 1)
+        end_depths.append(depth)
+    return start_depths, end_depths
+
+
+def find_block_end_line(
+    scrubbed_lines: List[str],
+    start_line_idx: int,
+    start_depths: List[int],
+    end_depths: List[int],
+) -> int:
+    """
+    Given 0-indexed start_line_idx where a block declaration starts, finds the 1-indexed
+    line number where its '{ ... }' block closes.
+    """
+    n = len(scrubbed_lines)
+    base_depth = start_depths[start_line_idx]
+    # Look for opening brace on start_line_idx or within next 5 lines
+    open_line = -1
+    for idx in range(start_line_idx, min(n, start_line_idx + 6)):
+        if "{" in scrubbed_lines[idx]:
+            open_line = idx
+            break
+        if ";" in scrubbed_lines[idx]:
+            return idx + 1  # Prototype / forward declaration without body
+    if open_line == -1:
+        return start_line_idx + 1
+
+    # If block opened and closed on the same line
+    if end_depths[open_line] <= base_depth:
+        return open_line + 1
+
+    for idx in range(open_line + 1, n):
+        if end_depths[idx] <= base_depth:
+            return idx + 1
+    return n
+
+
+def compact_params(params: str, max_len: int = 36) -> str:
+    """Compacts a parameter string for Caveman display."""
+    cleaned = re.sub(r"\s+", " ", params.strip())
+    if not cleaned:
+        return ""
+    # Strip default values like = ...
+    parts = [p.strip() for p in cleaned.split(",") if p.strip()]
+    short_parts = []
+    for p in parts:
+        p = re.sub(r"\s*=.*$", "", p).strip()
+        short_parts.append(p)
+    joined = ",".join(short_parts)
+    if len(joined) > max_len:
+        return joined[: max_len - 2] + ".."
+    return joined
+
+
+_RE_BODY_CALL = re.compile(r"\b([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)?)\s*\(")
+
+
+def extract_body_calls(
+    scrubbed_lines: List[str],
+    start_line: int,
+    end_line: int,
+    own_name: str = "",
+    max_calls: int = 4,
+) -> List[str]:
+    """
+    Extracts a compact Call-Graph Fingerprint of functions/APIs invoked inside
+    a function body (lines start_line..end_line, 1-indexed) so even obfuscated or
+    poorly named functions (e.g. xyz_123, doWork) reveal their true behavior.
+    """
+    calls: List[str] = []
+    seen = {own_name, own_name.split(".")[-1], own_name.split("::")[-1]}
+    s_idx = max(0, start_line - 1)
+    e_idx = min(len(scrubbed_lines), end_line)
+    for idx in range(s_idx, e_idx):
+        line = scrubbed_lines[idx]
+        for m in _RE_BODY_CALL.finditer(line):
+            raw_call = m.group(1)
+            base_call = raw_call.split(".")[-1]
+            if (
+                raw_call in CONTROL_KEYWORDS
+                or base_call in CONTROL_KEYWORDS
+                or raw_call in NOISE_CALLS
+                or base_call in NOISE_CALLS
+                or raw_call in seen
+                or base_call in seen
+            ):
+                continue
+            # skip line-start declaration of the function itself on first line
+            if idx == s_idx and raw_call == own_name:
+                continue
+            seen.add(raw_call)
+            calls.append(raw_call)
+            if len(calls) >= max_calls:
+                return calls
+    return calls
+
+
+# ============================================================================
+# 2. PYTHON NATIVE AST PARSER (100% Exact)
+# ============================================================================
+
+def parse_python(source: str) -> Dict[str, Any]:
+    lines = source.splitlines()
+    result: Dict[str, Any] = {
+        "lines": len(lines),
+        "imports": [],
+        "exports": [],
+        "classes": [],
+        "functions": [],
+        "doc": "",
+    }
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return parse_generic_fallback(source, "python")
+
+    mod_doc = ast.get_docstring(tree)
+    if mod_doc:
+        result["doc"] = mod_doc.strip().splitlines()[0][:80]
+
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                result["imports"].append(alias.name.split(".")[0])
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                result["imports"].append(node.module.split(".")[0])
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == "__all__":
+                    if isinstance(node.value, (ast.List, ast.Tuple)):
+                        for elt in node.value.elts:
+                            if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                                result["exports"].append(elt.value)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            fn_info = _extract_py_func(node)
+            result["functions"].append(fn_info)
+        elif isinstance(node, ast.ClassDef):
+            methods = []
+            for item in node.body:
+                if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    methods.append(_extract_py_func(item))
+            cls_doc = ast.get_docstring(node)
+            bases = [ast.unparse(b) if hasattr(ast, "unparse") else "" for b in node.bases]
+            result["classes"].append({
+                "name": node.name,
+                "line": node.lineno,
+                "end_line": getattr(node, "end_lineno", node.lineno),
+                "bases": [b for b in bases if b],
+                "methods": methods,
+                "doc": cls_doc.strip().splitlines()[0][:60] if cls_doc else "",
+            })
+
+    result["imports"] = sorted(set(result["imports"]))[:12]
+    return result
+
+
+def _extract_py_func(node: ast.AST) -> Dict[str, Any]:
+    assert isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    args = [a.arg for a in node.args.args if a.arg not in ("self", "cls")]
+    if node.args.vararg:
+        args.append("*" + node.args.vararg.arg)
+    if node.args.kwarg:
+        args.append("**" + node.args.kwarg.arg)
+    doc = ast.get_docstring(node)
+    ret = ""
+    if node.returns and hasattr(ast, "unparse"):
+        try:
+            ret = ast.unparse(node.returns)
+        except Exception:
+            ret = ""
+    calls: List[str] = []
+    seen = {node.name}
+    for child in ast.walk(node):
+        if isinstance(child, ast.Call):
+            cname = ""
+            if isinstance(child.func, ast.Name):
+                cname = child.func.id
+            elif isinstance(child.func, ast.Attribute):
+                if isinstance(child.func.value, ast.Name) and child.func.value.id not in ("self", "cls"):
+                    cname = f"{child.func.value.id}.{child.func.attr}"
+                else:
+                    cname = child.func.attr
+            base_c = cname.split(".")[-1]
+            if (
+                cname
+                and cname not in CONTROL_KEYWORDS
+                and base_c not in CONTROL_KEYWORDS
+                and cname not in NOISE_CALLS
+                and base_c not in NOISE_CALLS
+                and cname not in seen
+            ):
+                seen.add(cname)
+                calls.append(cname)
+                if len(calls) >= 4:
+                    break
+    return {
+        "name": node.name,
+        "params": ",".join(args),
+        "ret": ret[:24],
+        "line": node.lineno,
+        "end_line": getattr(node, "end_lineno", node.lineno),
+        "async": isinstance(node, ast.AsyncFunctionDef),
+        "calls": calls,
+        "doc": doc.strip().splitlines()[0][:60] if doc else "",
+    }
+
+
+# ============================================================================
+# 3. BRACE-AWARE POLYGLOT PARSERS (JS/TS, C/C++, Go, Rust, Java/Kotlin/C#/Swift)
+# ============================================================================
+
+def parse_js_ts(source: str) -> Dict[str, Any]:
+    raw_lines = source.splitlines()
+    scrubbed = scrub_c_family(source)
+    s_lines = scrubbed.splitlines()
+    start_d, end_d = compute_brace_depths(s_lines)
+
+    imports: List[str] = []
+    exports: List[str] = []
+    classes: List[Dict[str, Any]] = []
+    functions: List[Dict[str, Any]] = []
+
+    # Imports & Requires (scan raw lines for module paths)
+    re_import = re.compile(r"""(?:import\s+.*?from\s+|import\s+|require\s*\(\s*)['"]([^'"]+)['"]""")
+    re_export = re.compile(r"""^\s*export\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var|interface|type|enum)\s+([A-Za-z_$][\w$]*)""")
+    re_cjs_export = re.compile(r"""module\.exports\s*=|exports\.([A-Za-z_$][\w$]*)""")
+
+    for rl in raw_lines:
+        for m in re_import.finditer(rl):
+            mod = m.group(1)
+            if not mod.startswith("."):
+                mod = mod.split("/")[0] if not mod.startswith("@") else "/".join(mod.split("/")[:2])
+            imports.append(mod)
+        m_exp = re_export.match(rl)
+        if m_exp:
+            exports.append(m_exp.group(1))
+        for m_cjs in re_cjs_export.finditer(rl):
+            if m_cjs.group(1):
+                exports.append(m_cjs.group(1))
+
+    re_class = re.compile(r"""^\s*(?:export\s+)?(?:default\s+)?(?:abstract\s+)?(class|interface|type|enum)\s+([A-Za-z_$][\w$]*)""")
+    re_func = re.compile(r"""^\s*(?:export\s+)?(?:default\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)\s*(?:<[^>]*>)?\s*\(([^)]*)\)""")
+    re_arrow = re.compile(r"""^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=]+)?=\s*(?:async\s+)?(?:\(([^)]*)\)|([A-Za-z_$][\w$]*))\s*(?::[^=]+)?=>""")
+    re_method = re.compile(r"""^\s*(?:public|private|protected|static|async|readonly|get|set|\s)*([A-Za-z_$][\w$]*)\s*(?:<[^>]*>)?\s*\(([^)]*)\)\s*(?::\s*[^{;]+)?\{""")
+
+    # `obj.method = function name(...) {` / `Foo.prototype.bar = (...) =>` (CommonJS / Express style)
+    re_prop_fn = re.compile(
+        r"""^\s*([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+)\s*=\s*(?:async\s+)?"""
+        r"""(?:function\s*\*?\s*[A-Za-z_$][\w$]*?\s*\(([^)]*)\)|function\s*\*?\s*\(([^)]*)\)"""
+        r"""|\(([^)]*)\)\s*=>|([A-Za-z_$][\w$]*)\s*=>)"""
+    )
+
+    active_class: Optional[Dict[str, Any]] = None
+
+    for idx, s_line in enumerate(s_lines):
+        depth = start_d[idx]
+        line_no = idx + 1
+
+        if active_class and line_no > active_class["end_line"]:
+            active_class = None
+
+        if depth == 0:
+            m_prop = re_prop_fn.match(s_line)
+            if m_prop:
+                full_name = m_prop.group(1)
+                params = next((g for g in m_prop.groups()[1:] if g is not None), "")
+                end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                functions.append({
+                    "name": full_name,
+                    "params": compact_params(params),
+                    "line": line_no,
+                    "end_line": end_ln,
+                    "calls": extract_body_calls(s_lines, line_no, end_ln, full_name.split(".")[-1]),
+                })
+                continue
+
+            m_cls = re_class.match(s_line)
+            if m_cls:
+                kind, name = m_cls.group(1), m_cls.group(2)
+                end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                cls_obj = {
+                    "name": name,
+                    "kind": kind,
+                    "line": line_no,
+                    "end_line": end_ln,
+                    "methods": [],
+                }
+                classes.append(cls_obj)
+                if kind in ("class", "interface"):
+                    active_class = cls_obj
+                continue
+
+            m_fn = re_func.match(s_line)
+            if m_fn:
+                name, params = m_fn.group(1), m_fn.group(2)
+                end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                functions.append({
+                    "name": name,
+                    "params": compact_params(params),
+                    "line": line_no,
+                    "end_line": end_ln,
+                    "calls": extract_body_calls(s_lines, line_no, end_ln, name),
+                })
+                continue
+
+            m_arr = re_arrow.match(s_line)
+            if m_arr:
+                name = m_arr.group(1)
+                params = m_arr.group(2) if m_arr.group(2) is not None else (m_arr.group(3) or "")
+                end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                functions.append({
+                    "name": name,
+                    "params": compact_params(params),
+                    "line": line_no,
+                    "end_line": end_ln,
+                    "calls": extract_body_calls(s_lines, line_no, end_ln, name),
+                })
+                continue
+
+        elif depth == 1 and active_class is not None:
+            m_meth = re_method.match(s_line)
+            if m_meth:
+                m_name, m_params = m_meth.group(1), m_meth.group(2)
+                if m_name not in CONTROL_KEYWORDS:
+                    end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                    active_class["methods"].append({
+                        "name": m_name,
+                        "params": compact_params(m_params),
+                        "line": line_no,
+                        "end_line": end_ln,
+                        "calls": extract_body_calls(s_lines, line_no, end_ln, m_name),
+                    })
+
+    return {
+        "lines": len(raw_lines),
+        "imports": sorted(set(imports))[:12],
+        "exports": sorted(set(exports))[:12],
+        "classes": classes,
+        "functions": functions,
+        "doc": "",
+    }
+
+
+def parse_c_cpp(source: str) -> Dict[str, Any]:
+    """
+    Brace-aware C / C++ parser.
+    Accurately handles pointer returns (char *foo, const struct bar **baz),
+    C++ qualified methods (Class::Method), macros, and avoids false positives
+    inside function bodies by checking brace depth == 0 (or 1 inside class/struct/namespace).
+    """
+    raw_lines = source.splitlines()
+    scrubbed = scrub_c_family(source)
+    s_lines = scrubbed.splitlines()
+    start_d, end_d = compute_brace_depths(s_lines)
+
+    imports: List[str] = []
+    classes: List[Dict[str, Any]] = []
+    functions: List[Dict[str, Any]] = []
+
+    re_include = re.compile(r"""^\s*#\s*include\s*[<"]([^>"]+)[>"]""")
+    for rl in raw_lines:
+        m_inc = re_include.match(rl)
+        if m_inc:
+            imports.append(m_inc.group(1))
+
+    re_type = re.compile(r"""^\s*(?:typedef\s+)?(struct|class|enum|union|namespace)\s+([A-Za-z_]\w*)""")
+    # Function signature pattern for C/C++:
+    # Matches return type (including pointers *, references &, templates <...>), function name (or Class::Name), and (...)
+    re_c_func = re.compile(
+        r"""^\s*(?:[A-Za-z_]\w*(?:::[\w<>]+)?[\s\*&]+)+(\*?[\s\*]*[A-Za-z_]\w*(?:::[~A-Za-z_]\w*)?)\s*\(([^;{}]*)\)"""
+    )
+
+    n = len(s_lines)
+    idx = 0
+    while idx < n:
+        depth = start_d[idx]
+        s_line = s_lines[idx]
+        line_no = idx + 1
+
+        # Skip preprocessor directives
+        if s_line.lstrip().startswith("#"):
+            idx += 1
+            continue
+
+        if depth <= 1:
+            m_type = re_type.match(s_line)
+            if m_type and ";" not in s_line:
+                kind, name = m_type.group(1), m_type.group(2)
+                end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                classes.append({
+                    "name": name,
+                    "kind": kind,
+                    "line": line_no,
+                    "end_line": end_ln,
+                    "methods": [],
+                })
+                idx += 1
+                continue
+
+            # Join previous line if return type is on the line above (e.g. CPython / GNU style)
+            combined = s_line
+            sig_start_idx = idx
+            if (
+                re.match(r"^\s*\*?\s*[A-Za-z_]\w*(?:::[~A-Za-z_]\w*)?\s*\(", s_line)
+                and idx > 0
+                and start_d[idx - 1] == depth
+            ):
+                prev = s_lines[idx - 1].strip()
+                if prev and not prev.startswith("#") and prev[-1] not in ";{}:,":
+                    combined = prev + " " + s_line.lstrip()
+                    sig_start_idx = idx - 1
+
+            # Join up to 3 lines if signature wraps across lines before ')'
+            lookahead = 0
+            while "(" in combined and ")" not in combined and idx + lookahead + 1 < n and lookahead < 3:
+                lookahead += 1
+                combined += " " + s_lines[idx + lookahead].strip()
+
+            # Check if this declaration is followed by '{' (function definition) vs ';' (prototype/call)
+            after_paren_idx = idx + lookahead
+            has_body = False
+            if ")" in combined:
+                tail = combined.split(")", 1)[1]
+                if "{" in tail:
+                    has_body = True
+                elif ";" not in tail and after_paren_idx + 1 < n:
+                    next_line = s_lines[after_paren_idx + 1].strip()
+                    if next_line.startswith("{") or next_line.startswith(":"):
+                        has_body = True
+
+            if has_body:
+                m_fn = re_c_func.match(combined)
+                if m_fn:
+                    raw_name = m_fn.group(1).lstrip("* \t")
+                    params = m_fn.group(2)
+                    base_name = raw_name.split("::")[-1]
+                    if base_name not in CONTROL_KEYWORDS and not base_name.isupper():
+                        end_ln = find_block_end_line(s_lines, after_paren_idx, start_d, end_d)
+                        fn_start = sig_start_idx + 1
+                        functions.append({
+                            "name": raw_name,
+                            "params": compact_params(params),
+                            "line": fn_start,
+                            "end_line": end_ln,
+                            "calls": extract_body_calls(s_lines, fn_start, end_ln, base_name),
+                        })
+                        idx = max(idx + 1, end_ln)
+                        continue
+
+        idx += 1
+
+    return {
+        "lines": len(raw_lines),
+        "imports": sorted(set(imports))[:12],
+        "exports": [],
+        "classes": classes,
+        "functions": functions,
+        "doc": "",
+    }
+
+
+def parse_go_rust(source: str, lang: str) -> Dict[str, Any]:
+    raw_lines = source.splitlines()
+    scrubbed = scrub_c_family(source)
+    s_lines = scrubbed.splitlines()
+    start_d, end_d = compute_brace_depths(s_lines)
+
+    imports: List[str] = []
+    classes: List[Dict[str, Any]] = []
+    functions: List[Dict[str, Any]] = []
+
+    if lang == "go":
+        re_imp = re.compile(r'"([^"]+)"')
+        re_type = re.compile(r"^\s*type\s+([A-Za-z_]\w*)\s+(struct|interface)\b")
+        re_fn = re.compile(r"^\s*func\s+(?:\(\s*[^)]*?([A-Za-z_]\w*)\s*\)\s*)?([A-Za-z_]\w*)\s*\(([^)]*)\)")
+        for rl in raw_lines:
+            if "import" in rl or rl.strip().startswith('"'):
+                for m in re_imp.finditer(rl):
+                    imports.append(m.group(1).split("/")[-1])
+        for idx, s_line in enumerate(s_lines):
+            if start_d[idx] == 0:
+                m_t = re_type.match(s_line)
+                if m_t:
+                    end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                    classes.append({
+                        "name": m_t.group(1),
+                        "kind": m_t.group(2),
+                        "line": idx + 1,
+                        "end_line": end_ln,
+                        "methods": [],
+                    })
+                    continue
+                m_f = re_fn.match(s_line)
+                if m_f:
+                    recv, name, params = m_f.group(1), m_f.group(2), m_f.group(3)
+                    full_name = f"{recv}.{name}" if recv else name
+                    end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                    functions.append({
+                        "name": full_name,
+                        "params": compact_params(params),
+                        "line": idx + 1,
+                        "end_line": end_ln,
+                        "calls": extract_body_calls(s_lines, idx + 1, end_ln, name),
+                    })
+    else:  # rust
+        re_use = re.compile(r"^\s*(?:pub\s+)?use\s+([A-Za-z0-9_:]+)")
+        re_type = re.compile(r"^\s*(?:pub(?:\([^)]*\))?\s+)?(struct|enum|trait|impl)\b(?:<[^>]*>)?\s*([A-Za-z_]\w*)")
+        re_fn = re.compile(r"^\s*(?:pub(?:\([^)]*\))?\s+)?(?:const\s+)?(?:async\s+)?(?:unsafe\s+)?fn\s+([A-Za-z_]\w*)\s*(?:<[^>]*>)?\s*\(([^)]*)\)")
+        for rl in raw_lines:
+            m_u = re_use.match(rl)
+            if m_u:
+                imports.append(m_u.group(1).split("::")[0])
+        for idx, s_line in enumerate(s_lines):
+            if start_d[idx] <= 1:
+                m_t = re_type.match(s_line)
+                if m_t and m_t.group(1) != "impl":
+                    end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                    classes.append({
+                        "name": m_t.group(2),
+                        "kind": m_t.group(1),
+                        "line": idx + 1,
+                        "end_line": end_ln,
+                        "methods": [],
+                    })
+                    continue
+                m_f = re_fn.match(s_line)
+                if m_f:
+                    end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                    functions.append({
+                        "name": m_f.group(1),
+                        "params": compact_params(m_f.group(2)),
+                        "line": idx + 1,
+                        "end_line": end_ln,
+                        "calls": extract_body_calls(s_lines, idx + 1, end_ln, m_f.group(1)),
+                    })
+
+    return {
+        "lines": len(raw_lines),
+        "imports": sorted(set(imports))[:12],
+        "exports": [],
+        "classes": classes,
+        "functions": functions,
+        "doc": "",
+    }
+
+
+def parse_jvm_csharp_swift(source: str) -> Dict[str, Any]:
+    raw_lines = source.splitlines()
+    scrubbed = scrub_c_family(source)
+    s_lines = scrubbed.splitlines()
+    start_d, end_d = compute_brace_depths(s_lines)
+
+    imports: List[str] = []
+    classes: List[Dict[str, Any]] = []
+    functions: List[Dict[str, Any]] = []
+
+    re_imp = re.compile(r"^\s*(?:import|using)\s+([A-Za-z0-9_.]+)")
+    re_cls = re.compile(r"^\s*(?:public|private|protected|internal|open|abstract|final|sealed|data|static|\s)*(class|interface|enum|struct|protocol|extension|object)\s+([A-Za-z_]\w*)")
+    re_fn = re.compile(r"^\s*(?:public|private|protected|internal|open|override|static|final|synchronized|suspend|async|func|fun|\s)+(?:<[^>]+>\s+)?(?:[A-Za-z_][\w<>?,\[\]\s]*\s+)?([A-Za-z_]\w*)\s*\(([^)]*)\)")
+
+    for rl in raw_lines:
+        m_i = re_imp.match(rl)
+        if m_i:
+            imports.append(m_i.group(1).split(".")[0])
+
+    active_class: Optional[Dict[str, Any]] = None
+    for idx, s_line in enumerate(s_lines):
+        depth = start_d[idx]
+        line_no = idx + 1
+        if active_class and line_no > active_class["end_line"]:
+            active_class = None
+
+        if depth <= 1:
+            m_c = re_cls.match(s_line)
+            if m_c:
+                end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                cls_obj = {
+                    "name": m_c.group(2),
+                    "kind": m_c.group(1),
+                    "line": line_no,
+                    "end_line": end_ln,
+                    "methods": [],
+                }
+                classes.append(cls_obj)
+                active_class = cls_obj
+                continue
+
+            m_f = re_fn.match(s_line)
+            if m_f and ("{" in s_line or (idx + 1 < len(s_lines) and "{" in s_lines[idx + 1])):
+                fn_name = m_f.group(1)
+                if fn_name not in CONTROL_KEYWORDS:
+                    end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                    fn_obj = {
+                        "name": fn_name,
+                        "params": compact_params(m_f.group(2)),
+                        "line": line_no,
+                        "end_line": end_ln,
+                        "calls": extract_body_calls(s_lines, line_no, end_ln, fn_name),
+                    }
+                    if active_class is not None and depth >= 1:
+                        active_class["methods"].append(fn_obj)
+                    else:
+                        functions.append(fn_obj)
+
+    return {
+        "lines": len(raw_lines),
+        "imports": sorted(set(imports))[:12],
+        "exports": [],
+        "classes": classes,
+        "functions": functions,
+        "doc": "",
+    }
+
+
+def parse_generic_fallback(source: str, lang: str) -> Dict[str, Any]:
+    lines = source.splitlines()
+    classes: List[Dict[str, Any]] = []
+    functions: List[Dict[str, Any]] = []
+
+    re_cls = re.compile(r"^\s*(?:class|module|CREATE\s+TABLE)\s+([A-Za-z_][\w.]*)", re.IGNORECASE)
+    re_fn = re.compile(r"^\s*(?:def|function|func|fn)\s+([A-Za-z_][\w?!]*)\s*(?:\(([^)]*)\))?")
+
+    for idx, line in enumerate(lines):
+        m_c = re_cls.match(line)
+        if m_c:
+            classes.append({"name": m_c.group(1), "line": idx + 1, "end_line": idx + 1, "methods": []})
+            continue
+        m_f = re_fn.match(line)
+        if m_f:
+            functions.append({
+                "name": m_f.group(1),
+                "params": compact_params(m_f.group(2) or ""),
+                "line": idx + 1,
+                "end_line": idx + 1,
+            })
+
+    return {
+        "lines": len(lines),
+        "imports": [],
+        "exports": [],
+        "classes": classes,
+        "functions": functions,
+        "doc": "",
+    }
+
+
+def parse_file(file_path: Path, lang: str) -> Optional[Dict[str, Any]]:
+    try:
+        raw_bytes = file_path.read_bytes()
+        if b"\x00" in raw_bytes[:4096]:
+            return None  # Skip binary files
+        source = raw_bytes.decode("utf-8", errors="replace")
+    except Exception:
+        return None
+
+    if lang == "python":
+        data = parse_python(source)
+    elif lang in ("javascript", "typescript"):
+        data = parse_js_ts(source)
+    elif lang in ("c", "cpp"):
+        data = parse_c_cpp(source)
+    elif lang in ("go", "rust"):
+        data = parse_go_rust(source, lang)
+    elif lang in ("java", "kotlin", "csharp", "swift"):
+        data = parse_jvm_csharp_swift(source)
+    else:
+        data = parse_generic_fallback(source, lang)
+
+    data["lang"] = lang
+    data["bytes"] = len(raw_bytes)
+    data["sha256"] = hashlib.sha256(raw_bytes).hexdigest()[:16]
+    return data
+
+
+# ============================================================================
+# 4. REPOSITORY SCANNER WITH SHA-256 INCREMENTAL CACHE
+# ============================================================================
+
+def _cache_path(root_path: Path) -> Path:
+    """Cache lives OUTSIDE the scanned repo (never pollutes the user's tree)."""
+    base = Path(os.environ.get("LAZYREAD_CACHE_DIR") or os.environ.get("CODEMAP_CACHE_DIR") or (Path.home() / ".cache" / "lazy-read"))
+    return base / (hashlib.sha1(str(root_path).encode("utf-8")).hexdigest()[:16] + ".json")
+
+
+def _is_excluded(rel_path: str, patterns: List[str]) -> bool:
+    import fnmatch
+    parts = rel_path.split("/")
+    for pat in patterns:
+        p = pat.strip("/")
+        if fnmatch.fnmatch(rel_path, p) or fnmatch.fnmatch(rel_path, p + "/*") or fnmatch.fnmatch(rel_path, "*/" + p + "/*"):
+            return True
+        if any(fnmatch.fnmatch(seg, p) for seg in parts):
+            return True
+    return False
+
+
+def scan_repository(
+    root_path: Path, use_cache: bool = True, excludes: Optional[List[str]] = None
+) -> Dict[str, Dict[str, Any]]:
+    root_path = root_path.resolve()
+    excludes = excludes or []
+    if root_path.is_file():
+        ext = root_path.suffix.lower()
+        lang = LANG_EXTENSIONS.get(ext, "generic")
+        parsed = parse_file(root_path, lang)
+        return {root_path.name: parsed} if parsed else {}
+
+    cache_file = _cache_path(root_path)
+    cache_data: Dict[str, Any] = {}
+    if use_cache and cache_file.exists():
+        try:
+            cache_data = json.loads(cache_file.read_text(encoding="utf-8"))
+            if cache_data.get("version") != VERSION:
+                cache_data = {}  # parser changed -> invalidate stale skeletons
+        except Exception:
+            cache_data = {}
+
+    old_files = cache_data.get("files", {})
+    new_files: Dict[str, Dict[str, Any]] = {}
+    cache_updated = False
+
+    for dirpath, dirnames, filenames in os.walk(root_path):
+        # Prune ignored directories in-place
+        dirnames[:] = sorted([
+            d for d in dirnames
+            if d not in IGNORE_DIRS and not d.startswith(".")
+        ])
+        for fname in sorted(filenames):
+            ext = Path(fname).suffix.lower()
+            if ext not in LANG_EXTENSIONS:
+                continue
+            fpath = Path(dirpath) / fname
+            rel_path = fpath.relative_to(root_path).as_posix()
+            if excludes and _is_excluded(rel_path, excludes):
+                continue
+            try:
+                st = fpath.stat()
+            except OSError:
+                continue
+
+            # Skip huge minified/generated files (> 1 MB)
+            if st.st_size > 1_000_000 or fname.endswith(".min.js") or fname.endswith(".bundle.js"):
+                continue
+
+            cached = old_files.get(rel_path)
+            if (
+                cached
+                and cached.get("mtime") == int(st.st_mtime)
+                and cached.get("bytes") == st.st_size
+            ):
+                new_files[rel_path] = cached
+                continue
+
+            parsed = parse_file(fpath, LANG_EXTENSIONS[ext])
+            if parsed:
+                parsed["mtime"] = int(st.st_mtime)
+                new_files[rel_path] = parsed
+                cache_updated = True
+
+    if use_cache and cache_updated:
+        try:
+            cache_file.parent.mkdir(parents=True, exist_ok=True)
+            keep = new_files if not excludes else {**old_files, **new_files}
+            cache_file.write_text(
+                json.dumps({"version": VERSION, "files": keep}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+        except Exception:
+            pass
+
+    return new_files
+
+
+# ============================================================================
+# 5. CAVEMAN FORMATTERS (ULTRA / FULL / LITE)
+# ============================================================================
+
+def format_caveman_index(
+    index: Dict[str, Dict[str, Any]], mode: str = "full",
+    show_imports: bool = True, show_calls: bool = True,
+) -> str:
+    out_lines: List[str] = []
+    total_raw_bytes = sum(v.get("bytes", 0) for v in index.values())
+    total_lines = sum(v.get("lines", 0) for v in index.values())
+
+    if mode == "ultra":
+        # Group by directory for ultra-compact architectural overview
+        dir_groups: Dict[str, List[Tuple[str, Dict[str, Any]]]] = {}
+        for rel_path, info in index.items():
+            parent = str(Path(rel_path).parent)
+            dir_groups.setdefault(parent, []).append((Path(rel_path).name, info))
+
+        out_lines.append(f"# LAZY-READ [ULTRA] | {len(index)} files | {total_lines} lines")
+        for d, items in sorted(dir_groups.items()):
+            d_lines = sum(i[1]["lines"] for i in items)
+            file_summaries = []
+            for fname, info in items:
+                n_cls = len(info.get("classes", []))
+                n_fn = len(info.get("functions", []))
+                tag = f"{fname}({info['lines']}L"
+                if n_cls:
+                    tag += f",{n_cls}c"
+                if n_fn:
+                    tag += f",{n_fn}f"
+                tag += ")"
+                file_summaries.append(tag)
+            out_lines.append(f"dir {d}/ [{len(items)}f, {d_lines}L]: " + ", ".join(file_summaries))
+
+    elif mode == "full":
+        out_lines.append(f"# LAZY-READ [FULL] | {len(index)} files | {total_lines}L")
+        for rel_path, info in sorted(index.items()):
+            segs = [f"{rel_path} [{info['lines']}L]"]
+            if info.get("imports") and show_imports:
+                segs.append("imp:" + ",".join(info["imports"][:6]))
+            if info.get("exports"):
+                segs.append("exp:" + ",".join(info["exports"][:6]))
+
+            cls_strs = []
+            for c in info.get("classes", []):
+                rng = f"{c['line']}-{c['end_line']}" if c.get("end_line", c["line"]) != c["line"] else f"{c['line']}"
+                m_list = c.get("methods", [])
+                if m_list:
+                    m_names = ",".join(f"{m['name']}:{m['line']}" for m in m_list[:6])
+                    if len(m_list) > 6:
+                        m_names += f",+{len(m_list)-6}"
+                    cls_strs.append(f"{c['name']}:{rng}[{m_names}]")
+                else:
+                    cls_strs.append(f"{c['name']}:{rng}")
+            if cls_strs:
+                segs.append("cls:" + " ".join(cls_strs))
+
+            fn_strs = []
+            for f in info.get("functions", []):
+                rng = f"{f['line']}-{f['end_line']}" if f.get("end_line", f["line"]) != f["line"] else f"{f['line']}"
+                c_tag = f"->[{','.join(f['calls'][:3])}]" if (f.get("calls") and show_calls) else ""
+                fn_strs.append(f"{f['name']}({f.get('params','')}):{rng}{c_tag}")
+            if fn_strs:
+                segs.append("fn:" + " ".join(fn_strs[:10]))
+                if len(fn_strs) > 10:
+                    segs[-1] += f" +{len(fn_strs)-10}more"
+
+            out_lines.append(" | ".join(segs))
+
+    else:  # lite (detailed signatures + docstrings + call fingerprints)
+        out_lines.append(f"# LAZY-READ [LITE] | {len(index)} files | {total_lines}L")
+        for rel_path, info in sorted(index.items()):
+            hdr = f"## {rel_path} ({info['lines']}L, {info['lang']})"
+            if info.get("doc"):
+                hdr += f" — {info['doc']}"
+            out_lines.append(hdr)
+            if info.get("imports") and show_imports:
+                out_lines.append("  imp: " + ", ".join(info["imports"]))
+            for c in info.get("classes", []):
+                out_lines.append(f"  cls {c['name']} (L{c['line']}-{c.get('end_line', c['line'])})")
+                for m in c.get("methods", []):
+                    m_calls = f" -> [{', '.join(m['calls'])}]" if (m.get("calls") and show_calls) else ""
+                    out_lines.append(
+                        f"    .{m['name']}({m.get('params','')}) L{m['line']}-{m.get('end_line', m['line'])}{m_calls}"
+                    )
+            for f in info.get("functions", []):
+                f_calls = f" -> [{', '.join(f['calls'])}]" if (f.get("calls") and show_calls) else ""
+                doc_str = f" // {f['doc']}" if f.get("doc") else ""
+                out_lines.append(
+                    f"  fn {f['name']}({f.get('params','')}) L{f['line']}-{f.get('end_line', f['line'])}{f_calls}{doc_str}"
+                )
+
+    output_text = "\n".join(out_lines)
+    raw_tokens = max(1, total_raw_bytes // 4)
+    out_tokens = max(1, len(output_text.encode("utf-8")) // 4)
+    saved_pct = max(0.0, (1.0 - (out_tokens / raw_tokens)) * 100.0)
+    stats_line = (
+        f"\n# [Stats] Raw: ~{raw_tokens:,} tok -> lazy-read: ~{out_tokens:,} tok "
+        f"(Saved {saved_pct:.1f}%)"
+    )
+    return output_text + stats_line
+
+
+# ============================================================================
+# 6. SURGICAL SYMBOL SEARCH & SLICE EXTRACTOR
+# ============================================================================
+
+def search_symbols(index: Dict[str, Dict[str, Any]], query: str) -> str:
+    q = query.lower()
+    hits: List[str] = []
+    for rel_path, info in sorted(index.items()):
+        if q in rel_path.lower():
+            hits.append(f"file  {rel_path} [{info['lines']}L]")
+        for c in info.get("classes", []):
+            if q in c["name"].lower():
+                hits.append(f"cls   {rel_path}:{c['line']}-{c.get('end_line', c['line'])}  {c['name']}")
+            for m in c.get("methods", []):
+                m_calls = m.get("calls", [])
+                calls_str = f" ->[{','.join(m_calls)}]" if m_calls else ""
+                if (
+                    q in m["name"].lower()
+                    or q in f"{c['name']}.{m['name']}".lower()
+                    or any(q in call.lower() for call in m_calls)
+                ):
+                    hits.append(
+                        f"meth  {rel_path}:{m['line']}-{m.get('end_line', m['line'])}  {c['name']}.{m['name']}({m.get('params','')}){calls_str}"
+                    )
+        for f in info.get("functions", []):
+            f_calls = f.get("calls", [])
+            calls_str = f" ->[{','.join(f_calls)}]" if f_calls else ""
+            if q in f["name"].lower() or any(q in call.lower() for call in f_calls):
+                hits.append(
+                    f"fn    {rel_path}:{f['line']}-{f.get('end_line', f['line'])}  {f['name']}({f.get('params','')}){calls_str}"
+                )
+    if not hits:
+        return f"No symbol matching '{query}'. (For text such as error messages use: codemap.py find <path> '<text>')"
+    return f"# Search '{query}' ({len(hits)} hits):\n" + "\n".join(hits[:50])
+
+
+def slice_symbol(root_path: Path, index: Dict[str, Dict[str, Any]], target: str) -> str:
+    """
+    Extracts exact source lines for a symbol name (e.g., 'checkAndMarkDailyBroadcast'
+    or 'AuthManager.login') or 'file.py:10-40'.
+    """
+    root_path = root_path.resolve()
+
+    # Case 1: Explicit file:start-end
+    m_range = re.match(r"^(.+?):(\d+)(?:-(\d+))?$", target)
+    if m_range:
+        rel_f, s_ln = m_range.group(1), int(m_range.group(2))
+        e_ln = int(m_range.group(3)) if m_range.group(3) else s_ln + 30
+        fpath = root_path if root_path.is_file() else (root_path / rel_f)
+        if not fpath.exists():
+            return f"File not found: {rel_f}"
+        return _read_line_slice(fpath, rel_f, s_ln, e_ln)
+
+    # Case 2: Symbol lookup across index
+    q = target.lower()
+    matches: List[Tuple[str, str, int, int]] = []
+    for rel_path, info in sorted(index.items()):
+        for c in info.get("classes", []):
+            if c["name"].lower() == q:
+                matches.append((rel_path, f"class {c['name']}", c["line"], c.get("end_line", c["line"])))
+            for m in c.get("methods", []):
+                full_m = f"{c['name']}.{m['name']}".lower()
+                if m["name"].lower() == q or full_m == q:
+                    matches.append((rel_path, f"{c['name']}.{m['name']}", m["line"], m.get("end_line", m["line"])))
+        for f in info.get("functions", []):
+            if f["name"].lower() == q:
+                matches.append((rel_path, f"fn {f['name']}", f["line"], f.get("end_line", f["line"])))
+
+    if not matches:
+        return search_symbols(index, target)
+
+    blocks = []
+    for rel_path, sym_label, s_ln, e_ln in matches[:5]:
+        fpath = root_path if root_path.is_file() else (root_path / rel_path)
+        sym_clean = sym_label.split()[-1]
+        ctx_hdr = _build_context_header(index, rel_path, sym_clean)
+        blocks.append(_read_line_slice(fpath, f"{rel_path} [{sym_label}]", s_ln, e_ln, context_hdr=ctx_hdr))
+    return "\n\n".join(blocks)
+
+
+def _find_callers(index: Dict[str, Dict[str, Any]], sym_name: str) -> List[str]:
+    base = sym_name.split(".")[-1].split("::")[-1].lower()
+    if not base or len(base) < 3:
+        return []
+    callers: List[str] = []
+    for rel_path, info in sorted(index.items()):
+        for c in info.get("classes", []):
+            for m in c.get("methods", []):
+                if any(base == call.split(".")[-1].lower() for call in m.get("calls", [])):
+                    callers.append(f"{rel_path}:{c['name']}.{m['name']}(L{m['line']})")
+        for f in info.get("functions", []):
+            if f["name"].lower() != base and any(base == call.split(".")[-1].lower() for call in f.get("calls", [])):
+                callers.append(f"{rel_path}:{f['name']}(L{f['line']})")
+    return callers[:6]
+
+
+def _build_context_header(index: Dict[str, Dict[str, Any]], rel_path: str, sym_name: str) -> str:
+    info = index.get(rel_path, {})
+    parts = []
+    if info.get("imports"):
+        parts.append("imp:" + ",".join(info["imports"][:8]))
+    callers = _find_callers(index, sym_name)
+    if callers:
+        parts.append("called_by:" + ",".join(callers))
+    return f"# CONTEXT {' | '.join(parts)}\n" if parts else ""
+
+
+def _read_line_slice(
+    fpath: Path,
+    label: str,
+    start_line: int,
+    end_line: int,
+    collapse_blanks: bool = False,
+    context_hdr: str = "",
+) -> str:
+    try:
+        lines = fpath.read_text(encoding="utf-8", errors="replace").splitlines()
+    except Exception as e:
+        return f"Error reading {fpath}: {e}"
+    s = max(1, start_line)
+    e = min(len(lines), max(s, end_line))
+    numbered = []
+    for ln in range(s, e + 1):
+        txt = lines[ln - 1]
+        if collapse_blanks and not txt.strip():
+            continue
+        numbered.append(f"{ln:4d} | {txt}")
+    return f"# SLICE {label} (L{s}-L{e} of {len(lines)}L)\n{context_hdr}" + "\n".join(numbered)
+
+
+def _split_camel_snake(s: str) -> List[str]:
+    """Splits camelCase or snake_case into lowercase tokens >= 3 chars."""
+    s_spaced = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", s)
+    parts = re.split(r"[^A-Za-z0-9]+", s_spaced.lower())
+    stop = {"the", "and", "for", "with", "from", "get", "set", "check"}
+    return [p for p in parts if len(p) >= 3 and p not in stop]
+
+
+def inspect_batch(
+    root_path: Path, index: Dict[str, Dict[str, Any]], queries: List[str],
+    max_lines: int = 120, max_per_query: int = 2,
+) -> str:
+    """
+    Autonomous 1-Shot Batch Inspector:
+    Accepts 1 or more queries (function names, fuzzy names like 'filterEventsForGroup',
+    body calls like 'callKv', or raw code keywords like 'SET NX').
+    Automatically locates matching functions/lines and returns their exact code slices
+    in a single round-trip without losing comments or logic.
+    """
+    root_path = root_path.resolve()
+    out_blocks: List[str] = []
+    seen_slices = set()
+
+    for raw_q in queries:
+        q = raw_q.strip()
+        if not q:
+            continue
+        q_low = q.lower()
+        q_tokens = _split_camel_snake(q)
+        matched_items: List[Tuple[int, str, str, int, int, Optional[int]]] = []
+
+        for rel_path, info in sorted(index.items()):
+            all_syms = []
+            for c in info.get("classes", []):
+                all_syms.append((f"class {c['name']}", c["name"], [], c["line"], c.get("end_line", c["line"])))
+                for m in c.get("methods", []):
+                    all_syms.append((
+                        f"{c['name']}.{m['name']}",
+                        f"{c['name']}.{m['name']}",
+                        m.get("calls", []),
+                        m["line"],
+                        m.get("end_line", m["line"]),
+                    ))
+            for f in info.get("functions", []):
+                all_syms.append((
+                    f"fn {f['name']}",
+                    f["name"],
+                    f.get("calls", []),
+                    f["line"],
+                    f.get("end_line", f["line"]),
+                ))
+
+            for label, name, calls, s_ln, e_ln in all_syms:
+                name_low = name.lower()
+                calls_low = " ".join(calls).lower()
+                score = 0
+                if name == q or name.split(".")[-1] == q:
+                    score = 100
+                elif name_low == q_low or name_low.split(".")[-1] == q_low:
+                    score = 95
+                elif q_low in name_low:
+                    score = 80
+                elif any(q_low in c.lower() for c in calls):
+                    score = 75
+                elif len(q_tokens) >= 2:
+                    sym_tokens = set(_split_camel_snake(name) + _split_camel_snake(calls_low))
+                    overlap = sum(1 for t in q_tokens if any(t in st or st in t for st in sym_tokens))
+                    if overlap >= max(1, len(q_tokens) - 1):
+                        score = 50 + overlap * 10
+
+                if score > 0:
+                    matched_items.append((score, rel_path, label, s_ln, e_ln, None))
+
+            # Fallback: scan raw lines in file if no high-confidence symbol match yet
+            fpath = root_path if root_path.is_file() else (root_path / rel_path)
+            if fpath.exists():
+                try:
+                    flines = fpath.read_text(encoding="utf-8", errors="replace").splitlines()
+                    for idx, fline in enumerate(flines):
+                        fl_low = fline.lower()
+                        if q_low in fl_low or (len(q_tokens) >= 2 and all(t in fl_low for t in q_tokens)):
+                            hit_ln = idx + 1
+                            # Find enclosing function if any
+                            enc = None
+                            for label, _nm, _cl, s_ln, e_ln in all_syms:
+                                if s_ln <= hit_ln <= e_ln:
+                                    enc = (65, rel_path, label, s_ln, e_ln, hit_ln)
+                                    break
+                            if enc:
+                                matched_items.append(enc)
+                            else:
+                                matched_items.append((
+                                    55,
+                                    rel_path,
+                                    f"line-match '{q}'",
+                                    max(1, hit_ln - 8),
+                                    min(len(flines), hit_ln + 12),
+                                    hit_ln,
+                                ))
+                            break
+                except Exception:
+                    pass
+
+        matched_items.sort(key=lambda x: (-x[0], x[1], x[3]))
+        if not matched_items:
+            out_blocks.append(f"# Inspect '{q}': No match found.")
+            continue
+
+        # Precision filter:
+        # 1) When a Case-Exact symbol match (score == 100, e.g. 'sendFile' -> 'res.sendFile') exists,
+        #    automatically lock to score == 100 so lowercase collisions ('sendfile', score 95) are dropped
+        #    without needing --max-per-query 1.
+        # 2) Otherwise, when real symbol matches (score >= 80) exist, drop fuzzy/call/line noise.
+        if matched_items[0][0] == 100:
+            matched_items = [m for m in matched_items if m[0] == 100]
+        elif matched_items[0][0] >= 80:
+            matched_items = [m for m in matched_items if m[0] >= 80]
+
+        count_for_q = 0
+        for score, rel_path, label, s_ln, e_ln, hit_ln in matched_items:
+            key = (rel_path, s_ln, e_ln)
+            if key in seen_slices:
+                continue
+            if any(r == rel_path and not (e_ln < a or s_ln > b) for (r, a, b) in seen_slices):
+                continue  # overlaps a slice already emitted
+            seen_slices.add(key)
+            fpath = root_path if root_path.is_file() else (root_path / rel_path)
+            sym_clean = label.split()[-1]
+            ctx_hdr = _build_context_header(index, rel_path, sym_clean)
+            # Safety rule: functions <= 60 lines are returned in full (100% lossless).
+            # Giant functions (> 60 lines) with a specific hit_ln show header (3 lines) + ±15 lines around hit_ln.
+            if (e_ln - s_ln) > 60 and hit_ln is not None:
+                hdr_slice = _read_line_slice(fpath, f"{rel_path} [{label} HEADER]", s_ln, s_ln + 3, context_hdr=ctx_hdr)
+                win_s = max(s_ln + 4, hit_ln - 15)
+                win_e = min(e_ln, hit_ln + 15)
+                win_slice = _read_line_slice(fpath, f"{rel_path} [{label} WINDOW L{win_s}-L{win_e}]", win_s, win_e)
+                out_blocks.append(hdr_slice + f"\n  ... [L{s_ln+4}-L{win_s-1} folded] ...\n" + win_slice)
+            elif max_lines and (e_ln - s_ln + 1) > max_lines:
+                cut = s_ln + max_lines - 1
+                body = _read_line_slice(fpath, f"{rel_path} [{label} L{s_ln}-L{cut} of L{e_ln}]", s_ln, cut, context_hdr=ctx_hdr)
+                out_blocks.append(body + f"\n  ... [{e_ln - cut} more lines folded; use: slice {rel_path}:{cut + 1}-{e_ln}] ...")
+            else:
+                out_blocks.append(_read_line_slice(fpath, f"{rel_path} [{label}]", s_ln, e_ln, context_hdr=ctx_hdr))
+            count_for_q += 1
+            if count_for_q >= max_per_query:
+                break
+
+    return "\n\n".join(out_blocks)
+
+
+# ============================================================================
+# 7. v1.6.0 DEBUG HELPERS: find (text -> enclosing symbol), trace, history
+# ============================================================================
+
+def _symbol_spans(info: Dict[str, Any]) -> List[Tuple[int, int, str]]:
+    """All (start, end, label) spans in a file, methods/functions and classes."""
+    spans: List[Tuple[int, int, str]] = []
+    for c in info.get("classes", []):
+        spans.append((c["line"], c.get("end_line", c["line"]), c["name"]))
+        for m in c.get("methods", []):
+            spans.append((m["line"], m.get("end_line", m["line"]), f"{c['name']}.{m['name']}"))
+    for f in info.get("functions", []):
+        spans.append((f["line"], f.get("end_line", f["line"]), f["name"]))
+    return spans
+
+
+def _enclosing_symbol(info: Dict[str, Any], line_no: int) -> Optional[Tuple[int, int, str]]:
+    """Innermost (smallest) symbol span containing line_no, or None."""
+    best: Optional[Tuple[int, int, str]] = None
+    for s, e, label in _symbol_spans(info):
+        if s <= line_no <= e and (best is None or (e - s) < (best[1] - best[0])):
+            best = (s, e, label)
+    return best
+
+
+def _docstring_lines(lines: List[str], s: int, e: int) -> set:
+    """Line numbers of the docstring directly under a Python def/class starting at line s."""
+    for ln in range(s, min(e, s + 8) + 1):
+        if lines[ln - 1].rstrip().endswith(":"):
+            nxt = ln + 1
+            while nxt <= e and not lines[nxt - 1].strip():
+                nxt += 1
+            if nxt > e:
+                return set()
+            first = lines[nxt - 1].strip()
+            q = first[:3]
+            if q not in ('"""', "'''"):
+                return set()
+            if first.count(q) >= 2 and len(first) > 3:
+                return {nxt}
+            end = nxt + 1
+            while end <= e and q not in lines[end - 1]:
+                end += 1
+            return set(range(nxt, min(end, e) + 1))
+    return set()
+
+
+def _render_symbol(
+    root_path: Path, index: Dict[str, Dict[str, Any]], rel_path: str,
+    span: Tuple[int, int, str], hit_lines: List[int], max_lines: int,
+    window: int = 12, no_doc: bool = True, show_context: bool = True,
+) -> str:
+    """Slice a symbol, marking hit lines with '>>'. Long symbols are windowed around the hits."""
+    fpath = root_path if root_path.is_file() else (root_path / rel_path)
+    try:
+        lines = fpath.read_text(encoding="utf-8", errors="replace").splitlines()
+    except Exception as e:  # pragma: no cover
+        return f"Error reading {fpath}: {e}"
+    s, e, label = span
+    doc_lns = _docstring_lines(lines, s, e) if str(fpath).endswith((".py", ".pyi")) else set()
+    keep = set(range(s, e + 1))
+    if no_doc and doc_lns:
+        keep -= (doc_lns - set(hit_lines))
+    folded = False
+    if (max_lines and len(keep) > max_lines) or not show_context:
+        keep = {s} if show_context else set()
+        for h in hit_lines:
+            keep.update(range(max(s, h - window), min(e, h + window) + 1))
+            if window == 0 and h < e and lines[h - 1].rstrip().endswith((",", "(")):
+                keep.add(h + 1)
+        if no_doc and doc_lns:
+            keep -= (doc_lns - set(hit_lines))
+        folded = True
+    hits = set(hit_lines)
+    out: List[str] = []
+    prev = None
+    for ln in sorted(keep):
+        if prev is not None and ln != prev + 1:
+            out.append("     | ...")
+        txt = lines[ln - 1]
+        out.append(f"{ln:4d}>> {txt}" if ln in hits else f"{ln:4d} | {txt}")
+        prev = ln
+    body = "\n".join(out)
+    sym_clean = label.split(".")[-1]
+    ctx = _build_context_header(index, rel_path, sym_clean) if show_context else ""
+    note = f" folded around hits (symbol is {e - s + 1}L)" if (folded and show_context) else ""
+    return f"# SYMBOL {rel_path} [{label}] (L{s}-L{e}){note}\n{ctx}{body}"
+
+
+def find_text(
+    root_path: Path, index: Dict[str, Dict[str, Any]], needle: str,
+    regex: bool = False, ignore_case: bool = False, max_symbols: int = 6,
+    max_lines: int = 25, no_doc: bool = True, full_symbol: bool = False,
+) -> str:
+    """Text/regex search over INDEXED SOURCE FILES ONLY (no .pyc/binary/vendor noise).
+    Hits are grouped by innermost enclosing symbol, ranked with executable code hits first,
+    and automatically windowed in Compact Hit Mode when >= 3 symbols match."""
+    flags = re.I if ignore_case else 0
+    pat = re.compile(needle if regex else re.escape(needle), flags)
+    groups: Dict[Tuple[str, Tuple[int, int, str]], List[int]] = {}
+    code_hits_map: Dict[Tuple[str, Tuple[int, int, str]], List[int]] = {}
+    loose: List[Tuple[str, int, str]] = []
+    total = 0
+    for rel_path, info in sorted(index.items()):
+        fpath = root_path if root_path.is_file() else (root_path / rel_path)
+        try:
+            lines = fpath.read_text(encoding="utf-8", errors="replace").splitlines()
+        except Exception:
+            continue
+        is_py = str(fpath).endswith((".py", ".pyi"))
+        doc_cache: Dict[Tuple[int, int], set] = {}
+        for i, txt in enumerate(lines, 1):
+            if pat.search(txt):
+                total += 1
+                sp = _enclosing_symbol(info, i)
+                if sp:
+                    key = (rel_path, sp)
+                    groups.setdefault(key, []).append(i)
+                    s, e, _ = sp
+                    if is_py:
+                        if (s, e) not in doc_cache:
+                            doc_cache[(s, e)] = _docstring_lines(lines, s, e)
+                        in_doc = i in doc_cache[(s, e)]
+                    else:
+                        in_doc = False
+                    stripped = txt.lstrip()
+                    is_comment = stripped.startswith("#") or stripped.startswith("//") or stripped.startswith("*")
+                    if not in_doc and not is_comment:
+                        code_hits_map.setdefault(key, []).append(i)
+                else:
+                    loose.append((rel_path, i, txt.strip()))
+    if not total:
+        return f"No text match for {needle!r} in indexed source files."
+
+    # Rank symbols with executable code hits ahead of docstring/comment-only matches
+    ordered_items = list(groups.items())
+    ordered_items.sort(key=lambda item: (0 if item[0] in code_hits_map else 1))
+
+    broad_mode = (len(ordered_items) >= 3) and not full_symbol
+    eff_max_lines = min(max_lines, 3) if (broad_mode and max_lines) else (0 if full_symbol else max_lines)
+    eff_window = 0 if broad_mode else 5
+    show_ctx = not broad_mode
+
+    out = [f"# FIND {needle!r}: {total} hit(s) in {len(groups)} symbol(s)"
+           + (f" + {len(loose)} outside any symbol" if loose else "")]
+    for key, all_hl in ordered_items[:max_symbols]:
+        rel_path, sp = key
+        hl = code_hits_map.get(key, all_hl)
+        if broad_mode and len(hl) > 2:
+            hl = hl[:2]
+        out.append(_render_symbol(
+            root_path, index, rel_path, sp, hl, eff_max_lines,
+            window=eff_window, no_doc=no_doc, show_context=show_ctx,
+        ))
+    if len(ordered_items) > max_symbols:
+        rest = [f"{p}:{s[2]}" for (p, s), _ in ordered_items[max_symbols:]]
+        more_sfx = f" (+{len(rest) - 6} more)" if len(rest) > 6 else ""
+        out.append("# MORE symbols (raise --max-symbols): " + ", ".join(rest[:6]) + more_sfx)
+    if not broad_mode or not ordered_items:
+        for rel_path, i, txt in loose[:8]:
+            out.append(f"# LOOSE {rel_path}:{i}: {txt[:140]}")
+    return "\n\n".join(out)
+
+
+_TRACE_PATTERNS = [
+    # Python:  File "/a/b.py", line 12, in func
+    re.compile(r'File "(?P<f>[^"]+)", line (?P<l>\d+)'),
+    # Node/V8:  at fn (/a/b.js:12:5)   |  at /a/b.js:12:5
+    re.compile(r'\bat (?:.+? \()?(?P<f>[^\s()]+?\.(?:[cm]?[jt]sx?)):(?P<l>\d+)(?::\d+)?\)?'),
+    # Java/Kotlin/C#: at pkg.Cls.m(File.java:12)
+    re.compile(r'\bat [\w$.<>]+\((?P<f>[\w$.-]+\.(?:java|kt|cs|scala)):(?P<l>\d+)\)'),
+    # Go:  /a/b.go:12 +0x1f
+    re.compile(r'(?P<f>[^\s:]+\.go):(?P<l>\d+)'),
+    # Rust / generic:  at src/main.rs:12:5  |  --> src/main.rs:12:5
+    re.compile(r'(?:-->|\bat)\s+(?P<f>[^\s:]+\.rs):(?P<l>\d+)'),
+    # C/C++/PHP/Ruby: file.ext:LINE
+    re.compile(r'(?P<f>[^\s:()]+\.(?:c|h|cc|cpp|hpp|php|rb)):(?P<l>\d+)'),
+]
+
+
+def _match_repo_file(index: Dict[str, Dict[str, Any]], raw: str) -> Optional[str]:
+    """Match a path from a trace to an indexed file by longest common path suffix."""
+    raw = raw.replace("\\", "/")
+    parts = [p for p in raw.split("/") if p and p != "."]
+    best, best_n = None, 0
+    for rel in index:
+        rparts = rel.split("/")
+        n = 0
+        while n < min(len(rparts), len(parts)) and rparts[-1 - n] == parts[-1 - n]:
+            n += 1
+        if n > best_n:
+            best, best_n = rel, n
+    return best if best_n >= 1 else None
+
+
+def trace_frames(
+    root_path: Path, index: Dict[str, Dict[str, Any]], text: str,
+    max_lines: int = 40, no_doc: bool = True, window: int = 4, full_frames: bool = False,
+) -> str:
+    """Parse a stack trace; print the enclosing symbol of every in-repo frame (deduplicated),
+    failing lines marked '>>'. Intermediate caller frames are rendered compactly (signature + +-1 line)
+    while the leaf/crashing frame is rendered with full body context. Frames outside the repo are listed in one line."""
+    frames: List[Tuple[str, int]] = []
+    for ln in text.splitlines():
+        for pat in _TRACE_PATTERNS:
+            m = pat.search(ln)
+            if m:
+                frames.append((m.group("f"), int(m.group("l"))))
+                break
+    err = ""
+    for ln in reversed(text.strip().splitlines()):
+        if re.match(r"^\s*[\w.]+(Error|Exception|Warning|Exit|Interrupt)\b|^\s*(panic|Uncaught|Caused by|thread .* panicked)", ln):
+            err = ln.strip()
+            break
+    if not frames:
+        return "No stack frames recognized in input (supported: Python, Node/V8, Java/Kotlin/C#, Go, Rust, C/C++/PHP/Ruby)."
+    grouped: Dict[Tuple[str, Tuple[int, int, str]], List[int]] = {}
+    order: List[Tuple[str, Tuple[int, int, str]]] = []
+    loose: List[str] = []
+    external: List[str] = []
+    for raw, line_no in frames:
+        rel = _match_repo_file(index, raw)
+        if not rel:
+            external.append(f"{Path(raw).name}:{line_no}")
+            continue
+        sp = _enclosing_symbol(index[rel], line_no)
+        if not sp:
+            loose.append(f"{rel}:{line_no}")
+            continue
+        key = (rel, sp)
+        if key not in grouped:
+            grouped[key] = []
+            order.append(key)
+        if line_no not in grouped[key]:
+            grouped[key].append(line_no)
+    out = [f"# TRACE {len(frames)} frame(s): {len(order)} symbol(s) in repo"
+           + (f" | error: {err[:160]}" if err else "")]
+    for idx, key in enumerate(order):
+        is_leaf = (idx == len(order) - 1) or full_frames
+        f_max = max_lines if is_leaf else 2
+        f_win = window if is_leaf else 0
+        out.append(_render_symbol(
+            root_path, index, key[0], key[1], grouped[key], f_max,
+            window=f_win, no_doc=no_doc, show_context=is_leaf,
+        ))
+    if loose:
+        out.append("# MODULE-LEVEL frames: " + ", ".join(loose))
+    if external:
+        uniq = list(dict.fromkeys(external))
+        out.append(f"# OUTSIDE repo (skipped, {len(uniq)}): " + ", ".join(uniq[:8]))
+    return "\n\n".join(out)
+
+
+def symbol_history(
+    root_path: Path, index: Dict[str, Dict[str, Any]], target: str, limit: int = 5,
+) -> str:
+    """Recent git history of ONE symbol's exact line range (git log -L) + who last touched each line.
+    Read-only (git log / git blame). Answers 'what changed here recently?'."""
+    import subprocess
+    root = (root_path if root_path.is_dir() else root_path.parent).resolve()
+    if subprocess.run(["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
+                      capture_output=True, text=True).returncode != 0:
+        return "Not a git repository: history unavailable."
+    q = target.lower()
+    found: List[Tuple[str, int, int, str]] = []
+    for rel_path, info in sorted(index.items()):
+        for s, e, label in _symbol_spans(info):
+            if label.lower() == q or label.lower().endswith("." + q):
+                found.append((rel_path, s, e, label))
+    if not found:
+        return f"Symbol {target!r} not found. Try `find` or `search`."
+    out: List[str] = []
+    top = subprocess.run(["git", "-C", str(root), "rev-parse", "--show-toplevel"],
+                         capture_output=True, text=True).stdout.strip()
+    for rel_path, s, e, label in found[:2]:
+        abs_f = (root / rel_path) if not root_path.is_file() else root_path
+        try:
+            git_rel = abs_f.resolve().relative_to(Path(top).resolve()).as_posix()
+        except Exception:
+            git_rel = rel_path
+        log = subprocess.run(
+            ["git", "-C", top, "log", f"-{limit}", "-s", "--date=short",
+             "--format=%h %ad %an: %s", "-L", f"{s},{e}:{git_rel}"],
+            capture_output=True, text=True)
+        out.append(f"# HISTORY {rel_path} [{label}] (L{s}-L{e}) last {limit} commit(s) touching these lines")
+        commits = [ln for ln in log.stdout.splitlines() if ln.strip()]
+        out.append("\n".join(commits) if commits else "(no commits: file untracked or uncommitted)")
+        if commits:
+            diff = subprocess.run(
+                ["git", "-C", top, "log", "-1", "--format=# LAST CHANGE %h %ad %an", "--date=short",
+                 "-L", f"{s},{e}:{git_rel}"], capture_output=True, text=True).stdout.splitlines()
+            keep = [ln for ln in diff if ln.startswith(("# LAST", "+", "-", "@@")) and not ln.startswith(("+++", "---"))]
+            out.append("\n".join(keep[:30]))
+    return "\n".join(out)
+
+
+def _resolve_fuzzy_path(missing_path: Path) -> Optional[Path]:
+    """
+    If a user or AI passes a slightly wrong/moved file path (e.g.,
+    '/repo/scripts/brain3_rag_server.py' when the real file is '/repo/brain3_server.py'),
+    walks up to 3 parent levels to find the existing repo root and fuzzy-matches
+    the filename by token overlap and extension in < 20ms.
+    """
+    want_name = missing_path.name.lower()
+    want_ext = missing_path.suffix.lower()
+    want_tokens = [t for t in re.split(r"[^a-z0-9]+", missing_path.stem.lower()) if t]
+    if not want_tokens:
+        return None
+
+    parent = missing_path.parent
+    for _ in range(3):
+        if parent.exists() and parent.is_dir():
+            break
+        parent = parent.parent
+    if not parent.exists() or not parent.is_dir() or parent == Path("/"):
+        return None
+
+    best_score = 0
+    best_path: Optional[Path] = None
+    for dirpath, dirnames, filenames in os.walk(parent):
+        dirnames[:] = sorted([d for d in dirnames if d not in IGNORE_DIRS and not d.startswith(".")])
+        for fname in sorted(filenames):
+            fpath = Path(dirpath) / fname
+            if want_ext and fpath.suffix.lower() != want_ext:
+                continue
+            fn_low = fname.lower()
+            if fn_low == want_name:
+                return fpath
+            cand_tokens = [t for t in re.split(r"[^a-z0-9]+", fpath.stem.lower()) if t]
+            overlap = sum(1 for t in want_tokens if t in cand_tokens or any(len(t) >= 3 and (t in ct or ct in t) for ct in cand_tokens))
+            if overlap >= max(1, len(want_tokens) - 1):
+                score = overlap * 20 - len(cand_tokens)
+                if score > best_score:
+                    best_score = score
+                    best_path = fpath
+    return best_path
+
+
+# ============================================================================
+# 7. CLI ENTRYPOINT (With Autonomous Routing & Fuzzy Path Auto-Resolver)
+# ============================================================================
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="lazy-read: Polyglot CodeMap Skeleton Indexer & Surgical Symbol Slicer"
+    )
+    sub = parser.add_subparsers(dest="cmd")
+
+    p_map = sub.add_parser("map", help="Generate skeleton index (auto-inlines tiny <=40L single files)")
+    p_map.add_argument("path", nargs="?", default=".", help="Target repository or file path")
+    p_map.add_argument("--mode", choices=["ultra", "full", "lite"], default="full")
+    p_map.add_argument("--no-cache", action="store_true", help="Disable the on-disk skeleton cache")
+    p_map.add_argument("--no-imports", action="store_true", help="Omit imp: lists (~40%% smaller on JS repos)")
+    p_map.add_argument("--no-calls", action="store_true", help="Omit ->[calls] fingerprints (~12%% smaller)")
+    p_map.add_argument("--lean", action="store_true", help="Shortcut for --no-imports --no-calls (auto-enabled on >30 files)")
+    p_map.add_argument("--full-detail", action="store_true", help="Force showing imp: and ->[calls] even on repos >30 files")
+    p_map.add_argument("--exclude", action="append", default=[], metavar="GLOB",
+                       help="Skip dirs/files (repeatable), e.g. --exclude lodash --exclude 'vendor' --exclude '*.test.js'")
+
+    p_inspect = sub.add_parser("inspect", help="1-Shot Autonomous Batch Search + Slice for 1 or more queries")
+    p_inspect.add_argument("path", help="Target repository or file path")
+    p_inspect.add_argument("queries", nargs="+", help="1 or more symbol names, fuzzy queries, or keywords")
+    p_inspect.add_argument("--max-lines", type=int, default=120, help="Fold slices longer than N lines (0 = unlimited)")
+    p_inspect.add_argument("--max-per-query", type=int, default=2, help="Max slices returned per query")
+    p_inspect.add_argument("--exclude", action="append", default=[], metavar="GLOB", help="Skip dirs/files (repeatable)")
+
+    p_search = sub.add_parser("search", help="Search symbols and body call fingerprints across repository")
+    p_search.add_argument("path", help="Target repository path")
+    p_search.add_argument("query", help="Symbol or call substring to match")
+
+    p_slice = sub.add_parser("slice", help="Surgically slice exact lines of a symbol or file:start-end")
+    p_slice.add_argument("path", help="Target repository or file path")
+    p_slice.add_argument("target", help="Symbol name (e.g. myFunc, Class.method) or file:start-end")
+
+    p_find = sub.add_parser("find", help="Text/regex search in source files -> prints the ENCLOSING symbol (hits marked >>)")
+    p_find.add_argument("path", help="Target repository or file path")
+    p_find.add_argument("text", help="Text (or regex with --regex), e.g. an error message")
+    p_find.add_argument("--regex", action="store_true")
+    p_find.add_argument("-i", "--ignore-case", action="store_true")
+    p_find.add_argument("--max-symbols", type=int, default=6)
+    p_find.add_argument("--max-lines", type=int, default=25, help="Window long symbols around hits (0 = unlimited)")
+    p_find.add_argument("--no-doc", action="store_true", default=True, help="Drop Python docstrings from output (default in v1.7.0)")
+    p_find.add_argument("--with-doc", action="store_true", help="Include Python docstrings in output")
+    p_find.add_argument("--full-symbol", action="store_true", help="Render full symbols even when >=3 symbols match")
+    p_find.add_argument("--exclude", action="append", default=[], metavar="GLOB")
+
+    p_trace = sub.add_parser("trace", help="Paste a stack trace (stdin or --file): prints every in-repo frame's symbol")
+    p_trace.add_argument("path", help="Target repository path")
+    p_trace.add_argument("--file", help="Read the trace from this file instead of stdin")
+    p_trace.add_argument("--max-lines", type=int, default=40, help="Window leaf symbol longer than N lines around failing line (0 = unlimited)")
+    p_trace.add_argument("--window", type=int, default=4, help="Lines of context each side of a failing line in long leaf symbols")
+    p_trace.add_argument("--no-doc", action="store_true", default=True, help="Drop Python docstrings (default in v1.7.0)")
+    p_trace.add_argument("--with-doc", action="store_true", help="Include Python docstrings in output")
+    p_trace.add_argument("--full-frames", action="store_true", help="Render full window for intermediate caller frames too")
+    p_trace.add_argument("--exclude", action="append", default=[], metavar="GLOB")
+
+    p_hist = sub.add_parser("history", help="git history + blame of one symbol's exact lines (what changed recently?)")
+    p_hist.add_argument("path", help="Target repository path")
+    p_hist.add_argument("symbol", help="Symbol name, e.g. decode or JSONDecoder.decode")
+    p_hist.add_argument("-n", "--limit", type=int, default=5)
+
+    # Autonomous CLI routing:
+    # - `codemap.py /path` -> `map /path`
+    # - `codemap.py /path q1 q2 ...` -> `inspect /path q1 q2 ...`
+    known_cmds = {"map", "inspect", "search", "slice", "find", "trace", "history", "-h", "--help"}
+    if len(sys.argv) > 1 and sys.argv[1] not in known_cmds:
+        non_flag_args = [a for a in sys.argv[1:] if not a.startswith("-")]
+        if len(non_flag_args) >= 2:
+            sys.argv.insert(1, "inspect")
+        else:
+            sys.argv.insert(1, "map")
+
+    args = parser.parse_args()
+    cmd = args.cmd or "map"
+    raw_target = Path(getattr(args, "path", ".")).expanduser()
+    target_path = raw_target.resolve()
+    if not target_path.exists():
+        resolved = _resolve_fuzzy_path(target_path)
+        if resolved is not None:
+            print(f"# [Auto-Resolved Path] '{raw_target}' -> '{resolved}'")
+            target_path = resolved.resolve()
+        else:
+            print(f"Error: path not found: {target_path}", file=sys.stderr)
+            return 1
+
+    use_cache = not getattr(args, "no_cache", False)
+    index = scan_repository(target_path, use_cache=use_cache, excludes=getattr(args, "exclude", []))
+
+    if cmd == "map":
+        # Smart Short-File Auto-Inline: if mapping a single file <= 40 lines, inline it in 1 shot
+        if target_path.is_file() and len(index) == 1:
+            only_info = next(iter(index.values()))
+            if only_info.get("lines", 999) <= 40:
+                print(format_caveman_index(index, mode="full"))
+                print(_read_line_slice(target_path, target_path.name, 1, only_info["lines"]))
+                return 0
+        auto_lean = len(index) > 30 and not getattr(args, "full_detail", False)
+        lean = args.lean or auto_lean
+        print(format_caveman_index(
+            index, mode=args.mode,
+            show_imports=not (args.no_imports or lean),
+            show_calls=not (args.no_calls or lean),
+        ))
+    elif cmd == "inspect":
+        print(inspect_batch(target_path, index, args.queries,
+                            max_lines=args.max_lines, max_per_query=args.max_per_query))
+    elif cmd == "search":
+        print(search_symbols(index, args.query))
+    elif cmd == "slice":
+        print(slice_symbol(target_path, index, args.target))
+    elif cmd == "find":
+        use_no_doc = not getattr(args, "with_doc", False)
+        print(find_text(target_path, index, args.text, regex=args.regex, ignore_case=args.ignore_case,
+                        max_symbols=args.max_symbols, max_lines=args.max_lines, no_doc=use_no_doc,
+                        full_symbol=getattr(args, "full_symbol", False)))
+    elif cmd == "trace":
+        use_no_doc = not getattr(args, "with_doc", False)
+        data = Path(args.file).read_text(encoding="utf-8", errors="replace") if args.file else sys.stdin.read()
+        print(trace_frames(target_path, index, data, max_lines=args.max_lines, no_doc=use_no_doc,
+                           window=args.window, full_frames=getattr(args, "full_frames", False)))
+    elif cmd == "history":
+        print(symbol_history(target_path, index, args.symbol, limit=args.limit))
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

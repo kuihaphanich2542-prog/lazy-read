@@ -1,27 +1,483 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+"""docmap: outline / slice / search for LONG DOCUMENTS so an agent reads a table of
+contents first and only the sections it needs.
+
+Formats: .md .markdown .txt .rst .html .htm .docx .pdf (pdf needs `pdftotext`, poppler).
+Pure Python 3 standard library. No network. Read-only (never modifies the document).
+
+  docmap.py outline <file> [--depth N] [--no-snippet] [--max-sections N]
+  docmap.py slice   <file> <#N | "title text" | L10-80 | p3-5> [--max-chars N]
+  docmap.py search  <file> <text> [<text> ...] [--limit N]
 """
-Lazy-Read Performance Distribution Package v1.7.0
-Copyright (c) 2026. All rights reserved.
-Self-contained, read-only token optimization runtime.
-"""
-import sys as _sys, os as _os, lzma as _lzma, base64 as _b64, hashlib as _h
+from __future__ import annotations
 
-_PAYLOAD = """{Wp48S^xk9=GL@E0stWa8~^|S5YJf5;6eoz5nTW?9Eu`uszf$Krci>25I-HuUNjF`N?9VI&1P%41Wt3M0J8ew`l~EQlW5YbWGbyeAH*69>za@KJi&~wl60+l8uPS|ivB+TVYRa@E8ovN9j^|`H%ha)vFd|dsvN=s!F#<0K;XiaYR&f6C5fMgEWsZgocxEPu)a@XG!zAJnB`*6)h~i`9S6;Cj3{q#As!K<4SZI65tvmT{M5!{mBMyLlDJ&HQXc{kaDq_-<=v6DYDeY|Kt_qW&1$R>uUTK9#4b;Y*CaRHMTJh8&6dqz_FJ=fn@fnT+}QOf%l8ApN*S;r35NE;;$^JNClt?p!MCa+)C3}cbXdJ0@Dn9ln)$40*tPwyp6Ip-V~~i`UBjO-Ar)EaF6_)cau_pl?sj^u;4ljpTjO{y{_V+5kokn48nnxg^bRA(c7|h0(T;V~;>Wp^n1aRXpd(+1Lp?c(DztF+<TtNV<kU~```4Qmg(xW3gBJp9+=>+J{aBJXCiOz6*_~kA#`X72V5BGaaF$-XB*S)g9Q<-@_~HS#um}n7D5I@E2=)DkK|z|Kz5OTjveMQO07D*An&EURy$P!B!-~{^nYwGm9aG3=*#zOApm*a!j@#)Ox0UU#M5q1&Vxd5{WCl6e%rYN7H)ynMzo1GP7M!{Rg>Pr46lMJmoU~M%P+1N$^y~pePX9~O>B9_^qr~3Q_7{4NQqzkSGL+oP%?`Y_X>$Z(TeqYdEdjE6@?Wq`?0w+88}`Xo;bqDXzu5S;sq10H*ng0d>{1wq_L`GSOR>UHooty7TD&=Jg@Phr;4g+dP~<NWnyQDp0P#6TQ{*{qPp~uu=gzLQ-G9ial?r<Be2<$NADr{c(if=Zj~wZ_)rcmqS5F_g?D9Xnz-R{JsuzG^cWX|DCqRf`Jf?*wJKiH3J$IS&B?9>b5SUmg>u7e94DD}5V9@)n5~~`Blt{OoBUzKs+bO;0sp@qzDM9TDW=tOqAqA*QrjC>wZE*9QPYtDfKgid#-q^%P)`hl##|FG_DBD%ViYG&+%j~LczK(9?e0k$UzTqrM905b|;v%UT<ewEXGt)JAn-!q@TRV3@pQcwg<NU{AM$h+^&(hM#Ba#k2n6<1!h)&vna#mc`g_C}cWA(&kut}?9p%_@S;HPOOQFouFr`M7E*)FIbeKq$_+u<DZu1>TSbk`TMjI2J~JR}z18Jy8i%}ij}IuFl8Dd`vQ81>L}Y7ej)cq#=DT2#h-a1Tp@wohIMxpLQ5$gc;@ZY`=4yl)D%qV$y?{D{-1fM_Aq$GRR`d>wC3l|jLNB#VgHpNx*CL`2EL5HNQ|ygFF+GeDPnhMWGLD$hG{?B|7F7}sS@T_Dm@<b!wOen+-|xq1E_Kma)~jSV!qT9~!joG!E@h0FVbq7T|@EV0E$4)FuU=^@Ud{U?cjP5sEHi0)+@BI2@_HTE|br|hZC=I(!uX5HtNeq-22Q?RQy7j+CZ(QhFE<{IeAxJE#vnu|MM;b+4%myD;u?QB)1{RC3ajN$!5&|HZm8p$`#uV^QdHI4uW^PsR=^@x~0okWPMe%O|eKk~VxHvTd?5UT|tXJfkAS{eG2BdK{|{(Ex5<!a)5#$bf<Vz1}m@%*-~OuDp7FXSc2*brRW?ZD7RJ$)}J>3U2Z{9f;l-#`L|g0V&S{Y7t&BFX$C@uc5;YLrJ9Q?d0t7lZfkHkkF4F9lOsU16S1Ou;zyC>j-Ga+Zo?E6W;(f%~+XElds@(GJ_p88NdA@VJS&@kWezj<Z`<ngj&CDH&UJ5VPbG0%H8G$d)K3Zce?EXt9JuJU02`v%~oGbW+vzzs-FD$=5m3ZZJWV5ka0pL0y7TkNFgWzQGm`yYa8Oe?}_6*(E<{k)kC8z<5$kq5Kcf2zWFMkvq-T0ll4MWFBV>;QP_r&F?>F?sR>=)^U8G&0kl;6#pg2?B7zL-!GJ)$)bblB5k|*F2{D;(>W5lTARgrIrg>830HBmuMvig=oklGsC@b~@_$Y!Nf#z?K2({%v}=cB#MGH42)ewfL~BGQs<=!VVIfeuCd*!|KU!pdByat0Cg6f0i#Aj$M{^YRUZ)CIe{SYO_bq$BYFsA6QBoi&hHz{QE8nSW3j|o4QRX=TXoAImw;RJl%2Za|JM>pn;{~RAecb6w4H;-Scj%0Je#NKK!1@tPQg-Q@)>cHtiu-`Mk4?&KWy~0#lXu#K%<qnx&VRFppoy8iim=aW*{Q{*^IMX@u*D1%+cH2WKfTrx;8@hUv&MJB{#FUQK(#utM9Rt{3myiy{~O&Kd~wRJ?<XhckD@e7l~+)Ew8u)mNGc;~NTrf|Nt|$Hr#_jW2bgjT><QmBi@zV){ak`NdH0;UK47*$T|;I5Vyh_|2whITZ>H+f6w}v;g%s~l4!Q62FTe{0<QFkU%0m+uL(qI-${mo?sXg4!kO$T5<D+k)&aB^ni2amrFak#66^Xj0?amy0UlSoHnGEsw_bAhkw!>Z-XRS{$D!ps~_R^k6$I?hdg@_oxmuvtxvY|RWDI03aU?x;tx8#>sX`U}<v$ey88@jnhj?&X3z?3>_tE-=B#9;r?{_w~j_z1zBWA9OO><$c}*mi9qdgkx?f1Ux-6Q9urIBwJN48WDj@D+5_eSCp`GthOx^_KrLyw>BiYW;nUjKhWk@ZOc4PKKaiwP1ymI^GzdJ&QE8>1gr;8eXunQ=Yv^u}drrdta<^TMqJe;ILQ-m$8=+R9pM+4p32cTltX*vE^52w?RM`jV^zyhIPovym;IGu`xw_sSXqZjZog22BUaSLt~`|)NrV_(^@Uq)%M?JI^-uRq)r}LgZnV?ewacu7S7PQ4PmG{pCuMv_k%H3rg0(sTA;_@T-!XS8RgV920U@TO0N;GO_7gO+`4Jvrrf7gg;4mqx@v%QC|W`Z5@18Q02uO5%o2ZI9z;|4QWkWDIP0xFloh{UE+cLG!2eHp${7#MiY!)1d&XF%|9bWOD4*~F-N>1Jn_r9gdR<2~TzaF;!S}FbE|0s6K?P@H*o*_&L1m?D8^#c!;2*4G_xj9`Z-WGMG{l5DeLy7J2}^LD)vCgK=ZBCp!I_6?5Ap{{%h~J@0&cB7MX8BML#(w333wm`4}B;t60`D{4-oA^53>;q7@&+yG8T{Am&KL0d3u1pI0z9kPw~o^jcMuxkb%cd5-u27e<6WbXApE_7N(alY$2c41T#09<^yz{M^66}3Y&Q*UzIxM-Gqz!DrlLxiuT5R2zI}W(9GTL)zSCa^1I933ju{}mH)9}tJN{vCY0z6$3)7&A$CkvHj)jHUb&RiCe3w-aEk!bZbS3X*FtCx>On#PNnw3;u~`JyNq@^MKOEbB(G}{9qv>haj+_7trjah}*sty6=NYQ=#I}#0Xs4<Ys>~z{t34b}w>)t*N00|Mw@|=O9qR~H?Q<4RUFn$Ozh39T$Oi2Y2<zo85EmB2)jMk9s=M6<upsH<d(6N(c#y62QFqi%CCM5kN>hNEJRnJ>vM>QtcF!QZy(7cQjH`r)t&1NY*PGnpW1PNjJ`V7OCUODBmtB6ql|M(MM9bTSR$X1&&@~2e6+nHi$H*fgoIt8<9^4V8a{@D!OvcTOrGE8OF+43-LT_E?J>zQ<%o<)<<K#fnJj!Fk`)Bg{0sHx6Qj@B+(z`?Ymu_B`=cB~=!3!9LIvd<tAeFvzbW>ZA@U+c+a5&Ar{fjkwEh`=i(pLA_g$%MCnqk;h6<)t|`kIZe69h2mxi%QwrT$X$1q9jt=S;bM83^JSYyr+^v03(`*O!@!1QI+$PI@}9eP&9R^lZo=Zu<%}xud=jz%xC6ja8{ut$_me!xQ0M0xaD<Y20H#3(0ZQj;#KjT-=;?Dwx=Y^A%%fcH;b%b%uH+J!N+`cQ5C;w?ky;(b>>hS2pvfw?cHwwM{7i1ZqOHhwiC_Fxc&sZX}!MPZMrpa@A78b(43=hF$Tr^&D?`j+iUI<WhO+k(ugFq}5}bSi(izGx)^DEL$i4DHnrxTPY<PaQ9aE*xdt5CPM!C;IJd3L^`_CP%=ds8D@*F4Ka4(1`|Fl=nNH+CGSr-!6?|uJ!@e)EuI6>F{1^j6XVuvvRzs-=&|;bkK}TCN`>6^1`k5MoXr-7DnfcaMjDx4g@>(!G0aZerrVg70=N396x<CfDP8DY|1{z$cJ^zuvqin_9--1xykjI+FnjD8)pJN`rR4K|RZMK#+;jHNegfizY~NWBSLx^(?)M$rSFAIt1A;^@pYdWT1`do&8KjlV9&yv?5UOL`8wyLi)nz^S^B;5s;LMXVUa257Hp7L#;I1GV9ud-z08wFN-U*G_H*|`WnOK6uuK9?ddlDQlJRh0Y%eFC|`lcq^Wo?^S<`?<iwqblIb5@R|vZ)a6xJSJ&FY21H_ffu?P~fF5rM5<<#n~vZkdV#b=nRQA!H1E5dPRw<ysFXf9eH^0)W1o)V{VK&cugj#W9@3d1Is_1+s!kRiR)9I^VXFmdekcsxNT}Bb$kDFN|N!qZ+|a7uW;k$Z-q&VI^B@X{)wYicIGk{eos?Oh(v3d=FTGHgUuS9;Psb}^u4h_FQAyvOD9l*c2@mITe({ahKqT=LV9Ii<_YEi`C3!<uhfud=`u}`DbD(w?|}@pJLz$!9C`^CVQLs~pTY(aEbnqWGVAO;f&7!*LboMymJ%$)ev*d>L8FEf7MzJ)O9n0;F_u>Eq<q>bs1X&a^N)UZvaq5EP1)n72u%rkF2CNPOTfa1z#YNzAS_7ID7Q1b$Eq(ck3~?3MkYf(opzM=buZ=HlA_ipE)10@HsVa!HB~|&Mf*Wpq=Nq_Yjl!JiuqY|wf9NiubADl<6(SP7TkL?1v2845?AP(JoPVQmO4pWYOk+!qi4X8NX8_k&2N!AwsQMLG{K9`3ydQp&ogIk0^HIf)haEzJYs#rlEH|aL5yw_pL1r*zb_jd#O0P2K`r|NkC*U3=|*)z5XgACbOp}k+k_z$&HcdMeHaODeGBAbu0cWDWk^CS(pI7rIMnk|_tbKUEO&8EQ~(g?;xZ1GTgC(ewdDRfT^DL)9ujJC8d+>kfnW;a5nN1|+^G6!a(chE+R4OAIAwmr;>-lOXL-Yz$wFGw{D@2)mB7eU&*#S8*#8;c<=R&ZQjT&kb=H>p5v|SIArsw=Xmy7qSsd0dHY)os-VA$7^daxCkIXD1Maq98F8h}bWozq_9{;~D>MbjUyi*;%w;3dIAF-E-Z+8|{+CZoV>9Vm0yw61Bj5Y>`#QT@2F6mTa;&YKEzzxf9$sAPHfm}Cl!1?ySax=*v0ANm#+Kj!C>=WtmGDzwhz{4vL4-*4v<8_Ok6BNTGnkE)%FEDPhoHB{NhB*5~yEyN#x<7;=@dcx&G&i+8Mn<Z^fYmTKx4+}*i5{sf3QM(kC1yPS>(x9J1rXyHunQJIs?#PE%cgU=d$NP|P~4)I&I3Q#*Ce!P!EZsOCxU^{82RW8px29|D#E;6%+>5qS%_qBgg6jP%I9TsEay?#_L;=hLS;Yqpz^pUR0#?9fm`6wb{^&l1-hI1po>^63a4#tMP;tRF<zn30!!Dk>G|R9w*Lco#tsY}Xs&Tp9b<y7Q1?Da`Z{IycFfbdjSSQ8eIuG$Y=-Rty<4|A_m|3!`avc$CXfr{D-g9IpVSgE%Cfo&sFxBJ6>^cEP%%UpSg)$zX6Licj6p%NLmXLk`JEXca@|&@z_O7t^v&!D=39o}<AhTPd}^`ye0nv-7K7u0g0M*Wrvl>IRSOagk94-cQk~+?2Xb?KEm}jZ;G*L>m1$AUtCWx@i6dQiiKKQM!g|}^i8{t&bp`?G|B&!Y5SUZtWaG^x?_XNaUOIUldp8M4#d3z-ilg$Rj3HTC-^`#}5NO;6;Ify7w=3V%)q=zGqgTnN;mcPEZG4BYmi!46AC+)7qPP)1*tSLvhM&3-i+%EFFu?>NJN$H-rClvMyMFg7DV7LCp)BekHdKHe9e~}qFf`ox6SqR20k4589`}h%s$$+ZFf$;d4yX<e5rIoFuHs?2g!q3u%U;?$bm*~mzq;?nGo%ixlpUFZh^ZTDnutoLqG&{S&<*<k6FZ8_Y$Y}JA~W^cqjHC`LTUhMi4R*B{-#B?covNf(Q|@9qu+T<;4fi?bUXV6pE64na!?S3cISWD_=^Gj6QqPK*Juzvi}+JLixnZcXAC8gC9-1mUe9Y*yiuj$KF7Wb2w;%a0`m>!?CP@4#I1g*N;$8t0Bhz<Zw!X0IUlc_2Sh51qLdGPs}7NXA}h=8?qQ@dZb&!9zzvNBk^(=Gf;gdL2VnIw>onBWyUSE3GAeL|&AC_VMqI6qd!`<}MbjBE=JXikSBpEf=HpVFNh!6Iw=P+yR^c85Fe-}waN=7LUCNBlT&0SL=#{n2$n;UFYv~C`5FT%443(`shri2K>hJfp<37Md4QH7XW>P<n1>q9GnGYDrM9~SUn0w$WFn=4eUk*~QJ?TP}5remT{Vz9mDJy*wfT!Q!;U!gp<Hf)om=)TYrxM)?ImPYAHTVpU5Kn1(-T5^N>@8S$NMSdo5)$QAA#g6cYf=MY_JP4Q7A;9iAUwa8d=r!HjGY&GYwh?dIF|J|Rd7IFF{dc9z|P5hu*-6NosS|$@hXx+$M=aa(QdROIcgZymEYwf;)47#ZBZ&!N^r^^i(^X@<L;fdWLd9U-B0hs(R)tI2erh+xgqh51}mI>oq%8nz^PEFOe*7slwCcHq<NBVN&}mT<yQr(T*$4hi#lnqoP8pXl9x&0qf!YF3h+Y1G?ek&_53HZLF=(nl6$b?Ae`7s%06l+N(N#IOM3qbBahRWCX(Y6U3gtxb_;)bpjyB3+zX-n^(ePQb^7M{{5jIZ$c>7;#2`L0)B%TxD8xE&u)cX<L~TRoU8PzKlm*NkTfC*FCzO*R6ev@cGjxKPKS0ym6&=#>b;GN+za?EZLT^Ng000007>81#;1=#B00FHkhJ*nCvWm0XvBYQl0ssI200dcD"""
-_EXPECTED_INTEGRITY = "8e81b930765d5e54f6ea72deb09d2ed6e2241df8753608c8bb8265ec5f1a90b8"
-_SALT = "LAZYREAD_V170_DISTRIBUTION_KEY_RELEASE"
+import argparse
+import re
+import subprocess
+import sys
+import zipfile
+from html.parser import HTMLParser
+from pathlib import Path
+from typing import List, Optional, Tuple
+from xml.etree import ElementTree as ET
 
-# Runtime verification & integrity check
-if getattr(_sys, "gettrace", None) and _sys.gettrace() is not None:
-    _sys.exit("Error: Profiler/debugger attached. Execution halted.")
+VERSION = "1.7.0"
+TOK = 4  # approx chars per token (same convention as lazy-read)
 
-_actual_hash = _h.sha256((_PAYLOAD + _SALT).encode("utf-8")).hexdigest()
-if _actual_hash != _EXPECTED_INTEGRITY:
-    _sys.exit("Error: Corrupted distribution package or file integrity check failed.")
+Head = Tuple[int, str, int]  # (level, title, 1-based line index)
 
-try:
-    _raw = _lzma.decompress(_b64.b85decode(_PAYLOAD)).decode("utf-8")
-    _code = compile(_raw, "<lazy-read-core>", "exec")
-    exec(_code, globals())
-except Exception as _e:
-    _sys.exit(f"Error: Unable to launch runtime: {_e}")
+
+# --------------------------------------------------------------------------
+# Plain-text heading heuristics (txt / pdf)
+# --------------------------------------------------------------------------
+_RE_NUM = re.compile(r"^(\d+(?:\.\d+){0,3})[.)]?\s+\S")
+_RE_KEY = re.compile(r"^(chapter|section|part|appendix|article|บทที่|ส่วนที่|หมวด|ภาคผนวก|ข้อ)(?=\s|\d|$)", re.I)
+
+
+def _plain_heading(line: str, prev_blank: bool, next_nonblank: bool) -> Optional[int]:
+    s = line.strip()
+    if not s or len(s) > 90 or s.endswith((".", ",", ";", ":")) or s.startswith(("[page ", "---")):
+        return None
+    m = _RE_NUM.match(s)
+    if m and prev_blank and len(s.split()) <= 14:
+        return min(m.group(1).count(".") + 1, 4)
+    if _RE_KEY.match(s) and prev_blank:
+        return 1
+    letters = [c for c in s if c.isalpha()]
+    if prev_blank and next_nonblank and len(letters) >= 4 and s.isupper() and len(s.split()) <= 10:
+        return 1
+    return None
+
+
+def _plain_headings(lines: List[str]) -> List[Head]:
+    heads: List[Head] = []
+    for i, ln in enumerate(lines):
+        prev_blank = i == 0 or not lines[i - 1].strip()
+        nxt = any(l.strip() for l in lines[i + 1:i + 3])
+        lvl = _plain_heading(ln, prev_blank, nxt)
+        if lvl:
+            heads.append((lvl, ln.strip(), i + 1))
+    return heads
+
+
+# --------------------------------------------------------------------------
+# Extractors -> (lines, headings)
+# --------------------------------------------------------------------------
+def _read_text(path: Path) -> str:
+    raw = path.read_bytes()
+    for enc in ("utf-8-sig", "utf-16"):
+        try:
+            return raw.decode(enc)
+        except UnicodeError:
+            continue
+    return raw.decode("cp874", errors="replace")
+
+
+def extract_markdown(path: Path):
+    lines = _read_text(path).splitlines()
+    heads: List[Head] = []
+    in_fence = False
+    for i, ln in enumerate(lines):
+        if re.match(r"^\s*(```|~~~)", ln):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        m = re.match(r"^(#{1,6})\s+(.+?)\s*#*\s*$", ln)
+        if m:
+            heads.append((len(m.group(1)), m.group(2), i + 1))
+        elif i + 1 < len(lines) and ln.strip() and re.match(r"^(=+|-+)\s*$", lines[i + 1]) and len(lines[i + 1].strip()) >= 3:
+            heads.append((1 if lines[i + 1].startswith("=") else 2, ln.strip(), i + 1))
+    return lines, heads
+
+
+def extract_text(path: Path):
+    lines = _read_text(path).splitlines()
+    return lines, _plain_headings(lines)
+
+
+class _HTMLText(HTMLParser):
+    BLOCK = {"p", "div", "br", "li", "tr", "section", "article", "table", "ul", "ol", "pre", "blockquote", "header", "footer"}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.lines: List[str] = [""]
+        self.heads: List[Head] = []
+        self._skip = 0
+        self._h: Optional[int] = None
+        self._hbuf: List[str] = []
+
+    def _nl(self):
+        if self.lines[-1] != "":
+            self.lines.append("")
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style", "noscript", "svg"):
+            self._skip += 1
+        elif re.fullmatch(r"h[1-6]", tag):
+            self._nl()
+            self._h = int(tag[1])
+            self._hbuf = []
+        elif tag in self.BLOCK:
+            self._nl()
+        elif tag in ("td", "th"):
+            self.lines[-1] += " | "
+
+    def handle_endtag(self, tag):
+        if tag in ("script", "style", "noscript", "svg"):
+            self._skip = max(0, self._skip - 1)
+        elif re.fullmatch(r"h[1-6]", tag) and self._h:
+            title = " ".join("".join(self._hbuf).split())
+            if title:
+                self.heads.append((self._h, title, len(self.lines)))
+            self._h = None
+            self._nl()
+        elif tag in self.BLOCK:
+            self._nl()
+
+    def handle_data(self, data):
+        if self._skip:
+            return
+        t = " ".join(data.split())
+        if not t:
+            return
+        if self._h:
+            self._hbuf.append(t + " ")
+        if self.lines[-1] and not self.lines[-1].endswith(" "):
+            self.lines[-1] += " "
+        self.lines[-1] += t
+
+
+def extract_html(path: Path):
+    p = _HTMLText()
+    p.feed(_read_text(path))
+    lines = [l.rstrip() for l in p.lines]
+    # a heading's line index must point at the (non-empty) heading text line
+    heads = []
+    for lvl, title, idx in p.heads:
+        j = min(idx, len(lines))
+        while j > 1 and title not in lines[j - 1]:
+            j -= 1
+        heads.append((lvl, title, max(1, j)))
+    return lines, heads
+
+
+_W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+
+
+def _para_text(p) -> str:
+    out = []
+    for el in p.iter():
+        if el.tag == _W + "t" and el.text:
+            out.append(el.text)
+        elif el.tag == _W + "tab":
+            out.append("\t")
+        elif el.tag in (_W + "br", _W + "cr"):
+            out.append("\n")
+    return "".join(out)
+
+
+def extract_docx(path: Path):
+    with zipfile.ZipFile(path) as z:
+        doc = ET.fromstring(z.read("word/document.xml"))
+        names = {}
+        if "word/styles.xml" in z.namelist():
+            for st in ET.fromstring(z.read("word/styles.xml")).iter(_W + "style"):
+                sid = st.get(_W + "styleId")
+                nm = st.find(_W + "name")
+                if sid and nm is not None:
+                    names[sid] = (nm.get(_W + "val") or "").lower()
+    body = doc.find(_W + "body")
+    lines: List[str] = []
+    heads: List[Head] = []
+    for child in (list(body) if body is not None else []):
+        if child.tag == _W + "p":
+            text = _para_text(child).replace("\n", " ").strip()
+            ppr = child.find(_W + "pPr")
+            sid = None
+            if ppr is not None:
+                ps = ppr.find(_W + "pStyle")
+                if ps is not None:
+                    sid = ps.get(_W + "val")
+            sname = names.get(sid or "", (sid or "")).lower()
+            lvl = None
+            m = re.search(r"heading\s*(\d)", sname)
+            if m:
+                lvl = int(m.group(1))
+            elif sname in ("title", "หัวเรื่อง"):
+                lvl = 1
+            lines.append(text)
+            if lvl and text:
+                heads.append((lvl, text, len(lines)))
+        elif child.tag == _W + "tbl":
+            for tr in child.iter(_W + "tr"):
+                cells = []
+                for tc in tr.findall(_W + "tc"):
+                    cells.append(" ".join(_para_text(p).strip() for p in tc.iter(_W + "p")).strip())
+                lines.append(" | ".join(cells))
+            lines.append("")
+    return lines, heads
+
+
+def _pdf_bbox(path: Path):
+    """Return list of pages; each page a list of (text, line_height) in reading order."""
+    try:
+        res = subprocess.run(["pdftotext", "-bbox-layout", "-enc", "UTF-8", str(path), "-"], capture_output=True, timeout=180)
+    except FileNotFoundError:
+        raise SystemExit("error: pdftotext (poppler-utils) is required for .pdf files")
+    if res.returncode != 0:
+        raise SystemExit("error: pdftotext failed: " + res.stderr.decode("utf-8", "replace")[:200])
+    xml = res.stdout.decode("utf-8", errors="replace")
+    xml = re.sub(r"<!DOCTYPE[^>]*>", "", xml)
+    root = ET.fromstring(xml.encode("utf-8"))
+    pages = []
+    for pg in root.iter():
+        if pg.tag.split("}")[-1] != "page":
+            continue
+        items = []
+        for ln in pg.iter():
+            if ln.tag.split("}")[-1] != "line":
+                continue
+            words = [w.text or "" for w in ln if w.tag.split("}")[-1] == "word"]
+            h = float(ln.get("yMax", 0)) - float(ln.get("yMin", 0))
+            items.append((" ".join(words).strip(), h))
+        pages.append(items)
+    return pages
+
+
+def extract_pdf(path: Path):
+    pages = _pdf_bbox(path)
+    from collections import Counter
+    hs = Counter()
+    for pg in pages:
+        for t, h in pg:
+            if t:
+                hs[round(h, 1)] += len(t)
+    body = hs.most_common(1)[0][0] if hs else 0
+    big = sorted({round(h, 1) for pg in pages for t, h in pg if t and h >= body * 1.18}, reverse=True)
+    lvl_of = {h: min(i + 1, 4) for i, h in enumerate(big[:4])}
+    lines: List[str] = []
+    heads: List[Head] = []
+    for n, pg in enumerate(pages, 1):
+        lines.append(f"[page {n}]")
+        for t, h in pg:
+            lines.append(t)
+            hr = round(h, 1)
+            if hr in lvl_of and 2 <= len(t) <= 90 and not t.endswith((".", ",", ";")):
+                if heads and heads[-1][2] == len(lines) - 1 and heads[-1][0] == lvl_of[hr]:
+                    # merge wrapped multi-line heading
+                    lv, ttl, ix = heads.pop()
+                    heads.append((lv, (ttl + " " + t)[:90], ix))
+                else:
+                    heads.append((lvl_of[hr], t, len(lines)))
+    if len(heads) < 2:
+        heads = _plain_headings(lines)
+    if len(heads) < 2:  # still nothing -> one pseudo-section per page
+        heads = []
+        for i, ln in enumerate(lines):
+            if ln.startswith("[page "):
+                first = next((l.strip() for l in lines[i + 1:i + 8] if l.strip()), "")
+                heads.append((1, f"{ln} {first[:50]}".strip(), i + 1))
+    return lines, heads
+
+
+EXTRACTORS = {
+    ".md": extract_markdown, ".markdown": extract_markdown,
+    ".txt": extract_text, ".rst": extract_text, ".text": extract_text,
+    ".html": extract_html, ".htm": extract_html,
+    ".docx": extract_docx, ".pdf": extract_pdf,
+}
+
+
+def load(path: Path):
+    ext = path.suffix.lower()
+    fn = EXTRACTORS.get(ext)
+    if not fn:
+        raise SystemExit(f"error: unsupported format '{ext}'. Supported: {', '.join(sorted(EXTRACTORS))}")
+    lines, heads = fn(path)
+    heads = sorted(set(heads), key=lambda h: h[2])
+    return lines, heads
+
+
+# --------------------------------------------------------------------------
+# Sections
+# --------------------------------------------------------------------------
+class Section:
+    __slots__ = ("sid", "level", "title", "start", "end", "chars")
+
+    def __init__(self, sid, level, title, start, end, chars):
+        self.sid, self.level, self.title, self.start, self.end, self.chars = sid, level, title, start, end, chars
+
+
+def build_sections(lines: List[str], heads: List[Head]) -> List[Section]:
+    n = len(lines)
+    secs: List[Section] = []
+    if not heads:  # fallback: fixed chunks so very long headingless text is still navigable
+        step = 40
+        for k, s in enumerate(range(1, n + 1, step), 1):
+            e = min(n, s + step - 1)
+            first = next((l.strip() for l in lines[s - 1:e] if l.strip()), "")
+            secs.append(Section(k, 1, f"(chunk) {first[:50]}", s, e, sum(len(l) + 1 for l in lines[s - 1:e])))
+        return secs
+    if heads[0][2] > 1 and any(l.strip() for l in lines[:heads[0][2] - 1]):
+        e = heads[0][2] - 1
+        secs.append(Section(0, 1, "(preamble)", 1, e, sum(len(l) + 1 for l in lines[:e])))
+    for i, (lvl, title, ln) in enumerate(heads):
+        end = n
+        for lvl2, _t, ln2 in heads[i + 1:]:
+            if lvl2 <= lvl:
+                end = ln2 - 1
+                break
+        secs.append(Section(i + 1, lvl, title, ln, end, sum(len(l) + 1 for l in lines[ln - 1:end])))
+    return secs
+
+
+def _snippet(lines: List[str], s: Section, width: int = 70) -> str:
+    for l in lines[s.start:min(s.end, s.start + 12)]:
+        t = " ".join(l.split())
+        if len(t) >= 12 and not t.startswith(("#", "[page ", "[![", "![", "<", "|--", "```", "http")) and sum(c.isalpha() for c in t) >= 0.5 * len(t):
+            return (t[:width] + "…") if len(t) > width else t
+    return ""
+
+
+def _tok(chars: int) -> str:
+    t = max(1, chars // TOK)
+    return f"{t / 1000:.1f}k" if t >= 1000 else str(t)
+
+
+# --------------------------------------------------------------------------
+# Commands
+# --------------------------------------------------------------------------
+def cmd_outline(path: Path, depth: int, snippet: bool, max_sections: int) -> str:
+    lines, heads = load(path)
+    total = sum(len(l) + 1 for l in lines)
+    if total // TOK <= 400:  # tiny doc: just give it all, one round trip
+        return f"# DOCMAP {path.name} | tiny (~{total // TOK} tok) — full text inlined\n" + "\n".join(lines)
+    secs = build_sections(lines, heads)
+    shown = [s for s in secs if s.level <= depth]
+    out = [f"# DOCMAP {path.name} | {len(lines)} lines | ~{_tok(total)} tok | {len(secs)} sections (depth<={depth}: {len(shown)})"]
+    base = min((s.level for s in shown), default=1)
+    for s in shown[:max_sections]:
+        ind = "  " * max(0, s.level - base)
+        row = f"{ind}[#{s.sid}] {s.title[:80]} L{s.start}-{s.end} ~{_tok(s.chars)}t"
+        if snippet:
+            sn = _snippet(lines, s)
+            if sn:
+                row += f" — {sn}"
+        out.append(row)
+    if len(shown) > max_sections:
+        out.append(f"... +{len(shown) - max_sections} more sections (raise --max-sections or lower --depth)")
+    if len(shown) < len(secs):
+        out.append(f"# {len(secs) - len(shown)} deeper sections hidden; use --depth {depth + 1}")
+    return "\n".join(out)
+
+
+def _resolve_target(lines, secs, target: str):
+    t = target.strip()
+    m = re.fullmatch(r"#(\d+)", t)
+    if m:
+        sid = int(m.group(1))
+        for s in secs:
+            if s.sid == sid:
+                return s.start, s.end, f"#{s.sid} {s.title[:60]}"
+        raise SystemExit(f"error: no section #{sid}")
+    m = re.fullmatch(r"[Ll](\d+)-[Ll]?(\d+)", t)
+    if m:
+        a, b = int(m.group(1)), int(m.group(2))
+        return max(1, a), min(len(lines), b), f"L{a}-{b}"
+    m = re.fullmatch(r"[Pp](\d+)(?:-[Pp]?(\d+))?", t)
+    if m:
+        p1, p2 = int(m.group(1)), int(m.group(2) or m.group(1))
+        idx = {int(re.match(r"\[page (\d+)\]", l).group(1)): i + 1 for i, l in enumerate(lines) if re.match(r"\[page \d+\]", l)}
+        if p1 not in idx:
+            raise SystemExit(f"error: page {p1} not found (page slicing is for PDFs)")
+        end = idx.get(p2 + 1, len(lines)) - 1
+        return idx[p1], end, f"pages {p1}-{p2}"
+    low = t.lower()
+    hits = [s for s in secs if low in s.title.lower()]
+    exact = [s for s in hits if s.title.lower() == low]
+    hits = exact or hits
+    if not hits:
+        raise SystemExit(f"error: no section title contains '{t}'. Run `outline` first.")
+    if len(hits) > 1:
+        # same title repeated as parent/child (e.g. "# cookie" then "## cookie"): take the outermost
+        outer = hits[0]
+        if all(h.title.lower() == outer.title.lower() and outer.start <= h.start and h.end <= outer.end for h in hits):
+            hits = [outer]
+    if len(hits) > 1:
+        raise SystemExit("error: ambiguous title, use an id:\n" + "\n".join(f"  [#{s.sid}] {s.title[:70]} L{s.start}-{s.end}" for s in hits[:12]))
+    s = hits[0]
+    return s.start, s.end, f"#{s.sid} {s.title[:60]}"
+
+
+def cmd_slice(path: Path, target: str, max_chars: int) -> str:
+    lines, heads = load(path)
+    secs = build_sections(lines, heads)
+    a, b, label = _resolve_target(lines, secs, target)
+    body = lines[a - 1:b]
+    chars = sum(len(l) + 1 for l in body)
+    out = [f"# SLICE {path.name} [{label}] L{a}-L{b} of {len(lines)}L (~{_tok(chars)} tok)"]
+    used = 0
+    cut = None
+    for i, l in enumerate(body):
+        if max_chars and used + len(l) + 1 > max_chars and i > 0:
+            cut = a + i
+            break
+        out.append(f"{a + i} | {l}")
+        used += len(l) + 1
+    if cut:
+        out.append(f"... [folded L{cut}-L{b}; continue with: slice {path.name} L{cut}-{b}] ...")
+    return "\n".join(out)
+
+
+def cmd_search(path: Path, queries: List[str], limit: int) -> str:
+    lines, heads = load(path)
+    secs = build_sections(lines, heads)
+    out = []
+    for q in queries:
+        ql = q.lower()
+        hits = [(i + 1, l) for i, l in enumerate(lines) if ql in l.lower()]
+        out.append(f"# search '{q}' ({len(hits)} hits)")
+        for ln, l in hits[:limit]:
+            sec = next((s for s in reversed(secs) if s.start <= ln <= s.end and s.sid != 0), None)
+            where = f"[#{sec.sid} {sec.title[:40]}]" if sec else ""
+            k = l.lower().find(ql)
+            frag = " ".join(l[max(0, k - 50):k + len(q) + 70].split())
+            out.append(f"L{ln} {where} …{frag}…")
+        if len(hits) > limit:
+            out.append(f"... +{len(hits) - limit} more (raise --limit)")
+    return "\n".join(out)
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="docmap: outline/slice/search long documents")
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    o = sub.add_parser("outline")
+    o.add_argument("path")
+    o.add_argument("--depth", type=int, default=3)
+    o.add_argument("--no-snippet", action="store_true")
+    o.add_argument("--max-sections", type=int, default=150)
+    s = sub.add_parser("slice")
+    s.add_argument("path")
+    s.add_argument("target", help="#N | title text | L10-80 | p3-5")
+    s.add_argument("--max-chars", type=int, default=6000, help="fold output after N chars (0 = unlimited)")
+    q = sub.add_parser("search")
+    q.add_argument("path")
+    q.add_argument("queries", nargs="+")
+    q.add_argument("--limit", type=int, default=30)
+    a = ap.parse_args()
+    p = Path(a.path)
+    if not p.is_file():
+        print(f"error: file not found: {p}", file=sys.stderr)
+        return 1
+    if a.cmd == "outline":
+        print(cmd_outline(p, a.depth, not a.no_snippet, a.max_sections))
+    elif a.cmd == "slice":
+        print(cmd_slice(p, a.target, a.max_chars))
+    else:
+        print(cmd_search(p, a.queries, a.limit))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
