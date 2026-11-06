@@ -74,50 +74,50 @@ Tested against Python standard library copy with a seeded logic defect (`end != 
 
 ### Benchmark Visualizations
 
-#### 1. Debug Scenarios Token Comparison (Lower is Better)
+#### Efficiency Clustering and Context Boundary
 
 ```mermaid
-xychart-beta
-    title "Input Token Cost per Debug Scenario (Tokens)"
-    x-axis ["Error Message", "Stack Trace", "Function History", "Broad String"]
-    y-axis "Input Tokens" 0 --> 4000
-    bar [167, 170, 3660, 600]
-    bar [103, 144, 90, 196]
-```
-> Note: First bar represents Standard Tools (`grep` / Read / `git log -p -3`); second bar represents `lazy-read v1.7.0`.
-
-#### 2. Cross-Modality Input Reduction Ratio
-
-```mermaid
-flowchart LR
-    subgraph S1 ["Source Code (14+ Languages)"]
+graph TD
+    subgraph OVERFLOW ["Zone of Failure: Context Overflow (> 200k Tokens)"]
         direction TB
-        C1["Standard: ~65,352 tokens"] --> C2["lazy-read: ~1,468 tokens"]
-        C2 -.-> CR["44.5x Smaller (-97.75%)"]
+        RawAll["Full End-to-End Raw Exploration<br/>~1,291,706 tokens (6.4x limit)"]
+        RawTab["50,000-Row Raw Table Dump<br/>~1,176,414 tokens (5.8x limit)"]
     end
 
-    subgraph S2 ["Long Documents (MD/TXT/DOCX/PDF)"]
+    subgraph WORKABLE ["Zone of Inefficiency: High Friction & Latency"]
         direction TB
-        D1["Standard: ~86,799 tokens"] --> D2["lazy-read: ~8,114 tokens"]
-        D2 -.-> DR["10.7x Smaller (-90.65%)"]
+        RawDoc["Full Document Extraction<br/>~86,799 tokens"]
+        RawCode["Whole Codebase cat / Read<br/>~65,352 tokens"]
+        GitLog["Broad git log -p -3<br/>~3,660 tokens"]
     end
 
-    subgraph S3 ["Tabular Data (CSV/TSV/XLSX)"]
+    subgraph OPTIMIZED ["Zone of Optimal Execution: lazy-read Domain (< 10k Tokens)"]
         direction TB
-        T1["Standard: ~1,176,414 tokens"] --> T2["lazy-read: ~1,534 tokens"]
-        T2 -.-> TR["766.8x Smaller (-99.87%)"]
+        subgraph CLUSTER_ENGINES ["Engine Token Footprints"]
+            E_Tab["tablemap.py<br/>~1,534 tokens (-99.87%)"]
+            E_Code["codemap.py<br/>~1,468 tokens (-97.75%)"]
+            E_Doc["docmap.py<br/>~8,114 tokens (-90.65%)"]
+        end
+        subgraph CLUSTER_DEBUG ["Debug Helpers (1-Shot)"]
+            D_Hist["history: ~90 tok"]
+            D_Find["find: ~103 tok"]
+            D_Trace["trace: ~144 tok"]
+            D_Broad["adaptive: ~196 tok"]
+        end
+        SafeEnd["Combined End-to-End Exploration<br/>~8,588 tokens total (< 4.5% of context window)"]
     end
-```
 
-#### 3. End-to-End Workflow Context Window Fit (200k Limit)
+    RawAll -.->|"Token Compression Matrix (-99.34%)"| SafeEnd
+    RawTab -.->|"Schema & Aggregation (-99.87%)"| E_Tab
+    RawDoc -.->|"Outline & Slicing (-90.65%)"| E_Doc
+    RawCode -.->|"AST Skeleton & Inspect (-97.75%)"| E_Code
+    GitLog -.->|"Function Line Range (-97.8%)"| D_Hist
 
-```mermaid
-flowchart TD
-    Raw["Standard Raw Exploration: ~1,291,706 tokens<br/>(Exceeds 200k context limit by 6.4x - Task Fails)"]
-    Safe["lazy-read Exploration: ~8,588 tokens<br/>(Consumes < 4.5% of context window - Task Succeeds)"]
-
-    style Raw fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
-    style Safe fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style OVERFLOW fill:#ffebee,stroke:#ef5350,stroke-width:2px,color:#b71c1c
+    style WORKABLE fill:#fff8e1,stroke:#ffa726,stroke-width:2px,color:#e65100
+    style OPTIMIZED fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#1b5e20
+    style CLUSTER_ENGINES fill:#ffffff,stroke:#81c784,stroke-width:1px,color:#2e7d32
+    style CLUSTER_DEBUG fill:#ffffff,stroke:#81c784,stroke-width:1px,color:#2e7d32
 ```
 
 ---
