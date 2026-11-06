@@ -3,7 +3,7 @@
 Read the map first, then slice. Cuts the INPUT tokens an AI agent spends reading code, long documents, and tables.
 
 <p align="center">
-  <img src="docs/assets/lazy-read-benchmark-showcase.svg" alt="lazy-read Benchmark Showcase" width="100%" />
+  <img src="docs/assets/lazy-read-metrics-1793954010.svg" alt="lazy-read Benchmark Showcase" width="100%" />
 </p>
 
 ## Core Philosophy & Baseline Capabilities
