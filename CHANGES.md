@@ -1,5 +1,12 @@
 # Changelog
 
+## Changes in v1.7.1 (Clean Open-Source Release & MIT Licensing)
+- **100% Transparent Python Source:** Completely de-obfuscated `codemap.py`, `docmap.py`, and `tablemap.py` to transparent, human-readable Python 3 standard library code with full AST parsing, complete docstrings, and type hints.
+- **MIT License Added:** Formally released under the standard MIT License with Copyright (c) 2026 Pannawich Kuihaphanich (ZHONGZHEWEI).
+- **Universal Auto-Installers:** Added cross-platform one-line installers for macOS/Linux (`install.sh`) and Windows PowerShell (`install.ps1`) with automatic Python 3 detection and CLI shortcut registration.
+- **Optimized Skill Specification:** Streamlined `SKILL.md` to remove marketing benchmarks and retain pure operational cheat-sheet syntax, saving ~350 context tokens per agent invocation.
+- **Clean Cache Directory:** Unified cache directory under `~/.cache/lazy-read` (overridable via `LAZYREAD_CACHE_DIR`).
+
 ## Changes in v1.7.0 (Smart Debug Compression — Rin x Claude Co-Evolved)
 - **`find` Auto-No-Doc by Default:** `_render_symbol` now strips Python docstrings automatically (`--no-doc` is default; pass `--with-doc` to keep docstrings, or if a hit line itself lies inside a docstring it is preserved). Cuts docstring-heavy symbol lookups (`loads`) from ~1,046 tok down to ~222 tok and pinpoint `"Extra data"` from ~141 tok down to ~103 tok.
 - **`find` Code-Hit Priority Ranking:** Symbols with matches in executable code now rank ahead of symbols where the search term only appears inside docstrings or comments (fixes `find "raise "` returning docstring-only `dump`/`dumps` ahead of real `raise` statements).

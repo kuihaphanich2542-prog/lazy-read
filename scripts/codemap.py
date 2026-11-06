@@ -26,7 +26,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-VERSION = "1.7.0"
+VERSION = "1.7.1"
 
 NOISE_CALLS = {
     "print", "len", "str", "int", "float", "bool", "list", "dict", "set", "tuple",

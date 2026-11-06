@@ -87,7 +87,7 @@ SKILL_DIR="${HOME}/.agents/skills/lazy-read"
 CMD="$1"
 
 if [ -z "${CMD}" ] || [ "${CMD}" = "--help" ] || [ "${CMD}" = "-h" ]; then
-    echo "lazy-read v1.7.0 — Read the map first, then slice"
+    echo "lazy-read v1.7.1 — Read the map first, then slice"
     echo ""
     echo "Usage:"
     echo "  lazy-read map <repo> [flags]        # Codebase skeleton map"
@@ -143,7 +143,7 @@ echo "Verification check passed: 100% operational."
 
 echo ""
 echo "============================================================"
-echo " lazy-read v1.7.0 installed successfully!"
+echo " lazy-read v1.7.1 installed successfully!"
 echo " Skill path: ${INSTALL_DIR}"
 echo " CLI wrapper: ${WRAPPER}"
 echo ""

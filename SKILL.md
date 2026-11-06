@@ -3,7 +3,7 @@ name: lazy-read
 description: "Cut input tokens when exploring or reading large inputs. Code repos: skeleton map + surgical symbol slices. Long documents (md, txt, html, docx, pdf): outline then read one section. Tables (csv, xlsx): schema and aggregates instead of rows. Use before reading any big file."
 ---
 
-# Lazy-Read (v1.7.0) — Read the Map First, Then Slice
+# Lazy-Read (v1.7.1) — Read the Map First, Then Slice
 
 Instead of loading whole files, read a compact index first, then pull only the exact lines, section or rows needed. Three read-only helpers, Python 3 standard library only, no network, nothing is modified:
 
