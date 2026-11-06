@@ -1,166 +1,94 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 440" width="100%" height="100%">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="50%" stop-color="#090d16" />
-      <stop offset="100%" stop-color="#020617" />
-    </linearGradient>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b" />
-      <stop offset="50%" stop-color="#fbbf24" />
-      <stop offset="100%" stop-color="#fef08a" />
-    </linearGradient>
-    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#0ea5e9" />
-      <stop offset="100%" stop-color="#38bdf8" />
-    </linearGradient>
-    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+      .bar-anim { animation: barGrow 2s ease-out; }
+      @keyframes barGrow { from { width: 0; } }
+    </style>
+    <linearGradient id="gradEmerald" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#10b981" />
       <stop offset="100%" stop-color="#34d399" />
     </linearGradient>
-    <linearGradient id="cardDark" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.7" />
-      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.85" />
-    </linearGradient>
-    <style>
-      .mono { font-family: "JetBrains Mono", "SFMono-Regular", Consolas, Menlo, monospace; }
-      .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-      .pulse-gold { animation: pulseG 2.5s infinite ease-in-out; }
-      .glow-text { text-shadow: 0 0 12px rgba(245, 158, 11, 0.45); }
-      @keyframes pulseG {
-        0%, 100% { stroke-opacity: 0.9; }
-        50% { stroke-opacity: 0.4; }
-      }
-    </style>
   </defs>
 
-  <!-- Canvas Background -->
-  <rect width="1200" height="520" rx="16" fill="url(#bgGrad)" stroke="#334155" stroke-width="1.5" />
+  <!-- Clean Minimal Background -->
+  <rect width="1100" height="440" rx="14" fill="#0d1117" stroke="#30363d" stroke-width="1" />
 
-  <!-- Grid Pattern Overlay -->
-  <g opacity="0.08" stroke="#94a3b8" stroke-width="0.8">
-    <line x1="100" y1="0" x2="100" y2="520" />
-    <line x1="300" y1="0" x2="300" y2="520" />
-    <line x1="500" y1="0" x2="500" y2="520" />
-    <line x1="700" y1="0" x2="700" y2="520" />
-    <line x1="900" y1="0" x2="900" y2="520" />
-    <line x1="1100" y1="0" x2="1100" y2="520" />
-    <line x1="0" y1="100" x2="1200" y2="100" />
-    <line x1="0" y1="200" x2="1200" y2="200" />
-    <line x1="0" y1="300" x2="1200" y2="300" />
-    <line x1="0" y1="400" x2="1200" y2="400" />
-  </g>
+  <!-- Section Title -->
+  <text x="40" y="44" class="sans" font-size="16" font-weight="700" fill="#f0f6fc">Performance Benchmark &amp; Token Footprint</text>
+  <text x="40" y="66" class="sans" font-size="13" fill="#8b949e">Measured reduction across code exploration, long documents, and tabular data</text>
 
-  <!-- Header Banner -->
-  <g transform="translate(36, 32)">
-    <circle cx="10" cy="10" r="5" fill="#f59e0b" />
-    <text x="24" y="15" class="sans" font-size="13" font-weight="700" fill="#f59e0b" letter-spacing="1.5">LAZY-READ ARCHITECTURE</text>
-    <text x="24" y="42" class="sans" font-size="24" font-weight="900" fill="#f8fafc">
-      Surgical Token Optimization Telemetry
-    </text>
-    <text x="560" y="42" class="mono" font-size="13" fill="#64748b">
-      Read the map first, then slice (v1.7.0 Verified)
-    </text>
-  </g>
+  <!-- Two Columns Container -->
+  <!-- Left Card: Standard Raw Ingestion -->
+  <g transform="translate(40, 92)">
+    <rect width="490" height="308" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1" />
+    
+    <!-- Card Header -->
+    <text x="24" y="34" class="sans" font-size="14" font-weight="600" fill="#f85149">Standard AI Ingestion</text>
+    <text x="24" y="52" class="sans" font-size="12" fill="#8b949e">Full file dumps (cat, read_file, raw grep)</text>
 
-  <!-- 4 Top KPI Metric Badges -->
-  <g transform="translate(36, 96)">
-    <!-- Badge 1: Token Compression -->
-    <rect x="0" y="0" width="264" height="74" rx="10" fill="url(#cardDark)" stroke="#f59e0b" stroke-width="1.2" class="pulse-gold" />
-    <text x="20" y="26" class="sans" font-size="11" font-weight="700" fill="#94a3b8">MAX TOKEN REDUCTION</text>
-    <text x="20" y="58" class="mono" font-size="26" font-weight="900" fill="url(#goldGrad)" class="glow-text">-99.34%</text>
-    <text x="175" y="56" class="mono" font-size="12" fill="#f59e0b">150.4x smaller</text>
+    <!-- Metrics List -->
+    <g transform="translate(24, 76)">
+      <!-- Item 1 -->
+      <text x="0" y="16" class="sans" font-size="12" fill="#c9d1d9">Codebase Exploration</text>
+      <text x="442" y="16" text-anchor="end" class="mono" font-size="12" fill="#8b949e">~65,352 tok</text>
+      <rect x="0" y="24" width="442" height="6" rx="3" fill="#21262d" />
+      <rect x="0" y="24" width="220" height="6" rx="3" fill="#da3633" />
 
-    <!-- Badge 2: Context Fit -->
-    <rect x="288" y="0" width="264" height="74" rx="10" fill="url(#cardDark)" stroke="#38bdf8" stroke-width="1.2" />
-    <text x="308" y="26" class="sans" font-size="11" font-weight="700" fill="#94a3b8">200K CONTEXT OCCUPANCY</text>
-    <text x="308" y="58" class="mono" font-size="26" font-weight="900" fill="url(#cyanGrad)">&lt; 4.5%</text>
-    <text x="445" y="56" class="mono" font-size="12" fill="#38bdf8">fits easily</text>
+      <!-- Item 2 -->
+      <text x="0" y="56" class="sans" font-size="12" fill="#c9d1d9">Technical Spec Docs (MD/PDF)</text>
+      <text x="442" y="56" text-anchor="end" class="mono" font-size="12" fill="#8b949e">~86,799 tok</text>
+      <rect x="0" y="64" width="442" height="6" rx="3" fill="#21262d" />
+      <rect x="0" y="64" width="280" height="6" rx="3" fill="#da3633" />
 
-    <!-- Badge 3: 1-Shot Edit Accuracy -->
-    <rect x="576" y="0" width="264" height="74" rx="10" fill="url(#cardDark)" stroke="#10b981" stroke-width="1.2" />
-    <text x="596" y="26" class="sans" font-size="11" font-weight="700" fill="#94a3b8">FIRST-TRY EDIT ACCURACY</text>
-    <text x="596" y="58" class="mono" font-size="26" font-weight="900" fill="url(#emeraldGrad)">100%</text>
-    <text x="705" y="56" class="mono" font-size="12" fill="#10b981">exact lines</text>
-
-    <!-- Badge 4: Test Suite Status -->
-    <rect x="864" y="0" width="264" height="74" rx="10" fill="url(#cardDark)" stroke="#64748b" stroke-width="1.2" />
-    <text x="884" y="26" class="sans" font-size="11" font-weight="700" fill="#94a3b8">TEST SUITE VERIFICATION</text>
-    <text x="884" y="58" class="mono" font-size="26" font-weight="900" fill="#f1f5f9">30 / 30</text>
-    <text x="1010" y="56" class="mono" font-size="12" fill="#22c55e">passed (100%)</text>
-  </g>
-
-  <!-- Main Pipeline Card (3 Columns: Input Feed -> 3 Engines -> Output Context) -->
-  <g transform="translate(36, 190)">
-    <rect width="1128" height="295" rx="12" fill="#0b1329" stroke="#1e293b" stroke-width="1.2" />
-
-    <!-- Column 1: Unbounded Ingestion -->
-    <g transform="translate(24, 24)">
-      <text x="0" y="16" class="mono" font-size="12" font-weight="700" fill="#94a3b8">01 / UNBOUNDED INPUT</text>
-      <text x="0" y="34" class="sans" font-size="13" fill="#64748b">Raw File Dumping (cat/read)</text>
-
-      <rect x="0" y="50" width="310" height="48" rx="8" fill="#1e1520" stroke="#7f1d1d" stroke-width="1" />
-      <text x="14" y="72" class="sans" font-size="12" fill="#fca5a5">Source Code Repositories</text>
-      <text x="14" y="88" class="mono" font-size="11" fill="#ef4444">~65,352 tokens</text>
-
-      <rect x="0" y="108" width="310" height="48" rx="8" fill="#1e1520" stroke="#7f1d1d" stroke-width="1" />
-      <text x="14" y="130" class="sans" font-size="12" fill="#fca5a5">Long Specs (MD, DOCX, PDF)</text>
-      <text x="14" y="146" class="mono" font-size="11" fill="#ef4444">~86,799 tokens</text>
-
-      <rect x="0" y="166" width="310" height="48" rx="8" fill="#1e1520" stroke="#7f1d1d" stroke-width="1" />
-      <text x="14" y="188" class="sans" font-size="12" fill="#fca5a5">50,000-Row Tabular Data</text>
-      <text x="14" y="204" class="mono" font-size="11" fill="#ef4444">~1,176,414 tokens (OOM)</text>
-
-      <text x="0" y="242" class="mono" font-size="11" fill="#991b1b">Sum: ~1,291,706 tokens (Exceeds Limit)</text>
+      <!-- Item 3 -->
+      <text x="0" y="96" class="sans" font-size="12" fill="#c9d1d9">50,000-Row Table (CSV/XLSX)</text>
+      <text x="442" y="96" text-anchor="end" class="mono" font-size="12" fill="#f85149">~1,176,414 tok (OOM)</text>
+      <rect x="0" y="104" width="442" height="6" rx="3" fill="#21262d" />
+      <rect x="0" y="104" width="442" height="6" rx="3" fill="#da3633" />
     </g>
 
-    <!-- Flow Arrow 1 -->
-    <path d="M 374,150 L 398,150" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)" />
+    <!-- Bottom Summary Box -->
+    <rect x="24" y="214" width="442" height="70" rx="8" fill="#21262d" />
+    <text x="40" y="240" class="sans" font-size="12" fill="#8b949e">End-to-End Context Load</text>
+    <text x="40" y="266" class="mono" font-size="20" font-weight="700" fill="#f85149">~1,291,706 tok</text>
+    <text x="426" y="265" text-anchor="end" class="sans" font-size="12" font-weight="600" fill="#f85149">Exceeds 200k limit</text>
+  </g>
 
-    <!-- Column 2: Lazy-Read Engines -->
-    <g transform="translate(418, 24)">
-      <text x="0" y="16" class="mono" font-size="12" font-weight="700" fill="#f59e0b">02 / LAZY-READ ENGINES</text>
-      <text x="0" y="34" class="sans" font-size="13" fill="#cbd5e1">Map-First Architecture</text>
+  <!-- Right Card: Lazy-Read Pipeline -->
+  <g transform="translate(570, 92)">
+    <rect width="490" height="308" rx="10" fill="#161b22" stroke="#238636" stroke-width="1.2" />
+    
+    <!-- Card Header -->
+    <text x="24" y="34" class="sans" font-size="14" font-weight="600" fill="#3fb950">lazy-read Workflow</text>
+    <text x="24" y="52" class="sans" font-size="12" fill="#8b949e">Map-first indexing + surgical slicing</text>
 
-      <!-- Engine 1 -->
-      <rect x="0" y="50" width="320" height="48" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1" />
-      <text x="14" y="70" class="mono" font-size="12" font-weight="700" fill="#93c5fd">scripts/codemap.py</text>
-      <text x="14" y="87" class="mono" font-size="10.5" fill="#94a3b8">map + inspect (auto-lean, 14+ langs)</text>
+    <!-- Metrics List -->
+    <g transform="translate(24, 76)">
+      <!-- Item 1 -->
+      <text x="0" y="16" class="sans" font-size="12" fill="#c9d1d9">Code Skeleton (codemap)</text>
+      <text x="442" y="16" text-anchor="end" class="mono" font-size="12" font-weight="600" fill="#3fb950">~1,468 tok (-97.7%)</text>
+      <rect x="0" y="24" width="442" height="6" rx="3" fill="#21262d" />
+      <rect x="0" y="24" width="14" height="6" rx="3" fill="url(#gradEmerald)" />
 
-      <!-- Engine 2 -->
-      <rect x="0" y="108" width="320" height="48" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1" />
-      <text x="14" y="128" class="mono" font-size="12" font-weight="700" fill="#93c5fd">scripts/docmap.py</text>
-      <text x="14" y="145" class="mono" font-size="10.5" fill="#94a3b8">outline + slice (strips scripts, Thai TOR)</text>
+      <!-- Item 2 -->
+      <text x="0" y="56" class="sans" font-size="12" fill="#c9d1d9">Outline Slice (docmap)</text>
+      <text x="442" y="56" text-anchor="end" class="mono" font-size="12" font-weight="600" fill="#3fb950">~8,114 tok (-90.6%)</text>
+      <rect x="0" y="64" width="442" height="6" rx="3" fill="#21262d" />
+      <rect x="0" y="64" width="38" height="6" rx="3" fill="url(#gradEmerald)" />
 
-      <!-- Engine 3 -->
-      <rect x="0" y="166" width="320" height="48" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1" />
-      <text x="14" y="186" class="mono" font-size="12" font-weight="700" fill="#93c5fd">scripts/tablemap.py</text>
-      <text x="14" y="203" class="mono" font-size="10.5" fill="#94a3b8">schema + agg + slice (streaming, date serial)</text>
-
-      <text x="0" y="242" class="mono" font-size="11" fill="#38bdf8">1-Shot Debug: find, trace, history</text>
+      <!-- Item 3 -->
+      <text x="0" y="96" class="sans" font-size="12" fill="#c9d1d9">Schema &amp; Agg (tablemap)</text>
+      <text x="442" y="96" text-anchor="end" class="mono" font-size="12" font-weight="600" fill="#3fb950">~1,534 tok (-99.9%)</text>
+      <rect x="0" y="104" width="442" height="6" rx="3" fill="#21262d" />
+      <rect x="0" y="104" width="15" height="6" rx="3" fill="url(#gradEmerald)" />
     </g>
 
-    <!-- Flow Arrow 2 -->
-    <path d="M 778,150 L 802,150" stroke="#10b981" stroke-width="2" stroke-dasharray="4 3" />
-
-    <!-- Column 3: Surgical Context Output -->
-    <g transform="translate(822, 24)">
-      <text x="0" y="16" class="mono" font-size="12" font-weight="700" fill="#10b981">03 / SURGICAL CONTEXT</text>
-      <text x="0" y="34" class="sans" font-size="13" fill="#6ee7b7">AI Context Window Fit</text>
-
-      <rect x="0" y="50" width="280" height="48" rx="8" fill="#062e20" stroke="#059669" stroke-width="1" />
-      <text x="14" y="71" class="sans" font-size="12" fill="#a7f3d0">Code Skeleton + Slice</text>
-      <text x="14" y="87" class="mono" font-size="11" font-weight="700" fill="#34d399">~1,468 tokens (-97.75%)</text>
-
-      <rect x="0" y="108" width="280" height="48" rx="8" fill="#062e20" stroke="#059669" stroke-width="1" />
-      <text x="14" y="129" class="sans" font-size="12" fill="#a7f3d0">Target Section Slice</text>
-      <text x="14" y="145" class="mono" font-size="11" font-weight="700" fill="#34d399">~8,114 tokens (-90.65%)</text>
-
-      <rect x="0" y="166" width="280" height="48" rx="8" fill="#062e20" stroke="#059669" stroke-width="1" />
-      <text x="14" y="187" class="sans" font-size="12" fill="#a7f3d0">Schema &amp; Group Agg</text>
-      <text x="14" y="203" class="mono" font-size="11" font-weight="700" fill="#34d399">~1,534 tokens (-99.87%)</text>
-
-      <text x="0" y="242" class="mono" font-size="11" font-weight="700" fill="#10b981">Total: ~8,588 tokens (&lt; 4.5% of 200k)</text>
-    </g>
+    <!-- Bottom Summary Box -->
+    <rect x="24" y="214" width="442" height="70" rx="8" fill="#102419" stroke="#238636" stroke-width="1" />
+    <text x="40" y="240" class="sans" font-size="12" fill="#7ee787">Optimized Total Footprint</text>
+    <text x="40" y="266" class="mono" font-size="20" font-weight="700" fill="#3fb950">~8,588 tok</text>
+    <text x="426" y="265" text-anchor="end" class="sans" font-size="12" font-weight="600" fill="#3fb950">-99.3% (&lt; 4.5% of context)</text>
   </g>
 </svg>
