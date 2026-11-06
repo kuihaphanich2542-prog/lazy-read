@@ -6,6 +6,22 @@ Read the map first, then slice. Cuts the INPUT tokens an AI agent spends reading
   <img src="docs/assets/lazy-read-benchmark-v1793954221.svg" alt="lazy-read Benchmark Showcase" width="100%" />
 </p>
 
+## Quick Install (macOS / Linux / Windows)
+
+Zero external dependencies (pure Python 3 standard library). If Python 3 is missing, the installer will automatically detect and install it for you.
+
+### macOS and Linux (Terminal)
+```bash
+curl -fsSL https://raw.githubusercontent.com/kuihaphanich2542-prog/lazy-read/main/install.sh | bash
+```
+
+### Windows (PowerShell)
+```powershell
+irm https://raw.githubusercontent.com/kuihaphanich2542-prog/lazy-read/main/install.ps1 | iex
+```
+
+Once installed, lazy-read is automatically detected by AI coding agents (Antigravity, Claude Code, Cursor, Roo Code) via `SKILL.md`, and can also be called directly from your terminal using the `lazy-read` CLI command.
+
 ## Core Philosophy & Baseline Capabilities
 
 When standard AI agents explore a repository, document, or spreadsheet, their default behavior is to dump full file contents into the context window (`cat`, `Read`, or `read_file`). This rapidly consumes context budgets, degrades reasoning quality, and leads to context overflow.

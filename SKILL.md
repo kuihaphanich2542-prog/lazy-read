@@ -64,11 +64,3 @@ Caveats: identical titles nested parent/child resolve to the outer section; true
 
 Never page thousands of rows into the conversation. Joins, pivots, charts and formulas: run real code (e.g. pandas) after reading the schema. xlsx: cached values only (formulas are not evaluated); date-formatted cells are converted from serials.
 
----
-
-## Measured savings (approx tokens = chars/4; own test files, 1 run each)
-
-- **Code:** JS repo 1,063 files (~357k tok): `map full` with defaults ~1.6k, `map ultra` ~160, `inspect` of 3 symbols ~0.7k. Python stdlib subset 72 files (~296k): `map full` ~7.8k, `inspect` of 2 symbols ~1.9k. Versus `grep` + reading a window per hit, `inspect` saves only ~15–25%; the big win is `map` for orientation and fewer round-trips.
-- **Documents:** md 5,800 lines (52k tok), same content as docx and pdf (~36k each): outline depth 1 ≈ 360, search ≈ 150, one section slice ≈ 1.6–1.8k → a "what does X say about Y" lookup ≈ 2.1–2.3k (−94 to −96%). For plain keyword lookups in markdown, `grep -n` + a 60-line window (~0.8k) is cheaper; the skill's edge is docx/pdf, whole-section context, and navigation without a keyword.
-- **Tables:** 50,000-row CSV (~710k tok) → schema ≈ 240, group-by ≈ 90; 20,000-row xlsx (~233k) → schema ≈ 250. `head -5` is cheaper (~70) but shows no types, null rates or ranges. Aggregates matched pandas exactly.
-- Token savings apply to INPUT you read; tokens you write are unchanged.
