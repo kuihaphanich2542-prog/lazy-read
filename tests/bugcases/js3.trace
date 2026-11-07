@@ -1,0 +1,10 @@
+js3/src/svc.js:5
+  return row.name.trim();
+                  ^
+
+TypeError: Cannot read properties of undefined (reading 'trim')
+    at loadName (js3/src/svc.js:5:19)
+    at async loadAll (js3/src/svc.js:9:34)
+    at async main (js3/src/main.js:4:15)
+
+Node.js v22.23.4

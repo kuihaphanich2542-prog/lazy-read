@@ -1,0 +1,7 @@
+rb1/util.rb:3:in `shout': undefined method `upcase' for nil (NoMethodError)
+
+  text.upcase + "!"
+      ^^^^^^^
+	from rb1/main.rb:7:in `pick'
+	from rb1/main.rb:11:in `run'
+	from rb1/main.rb:14:in `<main>'

@@ -1,5 +1,15 @@
 # Changelog
 
+## Changes in v1.7.2 (Crash-frame detection for every runtime, Ruby/PHP support, 14-case bug suite)
+- **`trace` crash-frame fix:** v1.7.0/1.7.1 always treated the LAST frame as the crashing one, which is right only for Python. Go, Node, Java/Kotlin/C#, Rust, Ruby, PHP and C list the crashing frame FIRST, so the real crash site was rendered as a one-line caller and an outer frame (`main`) was shown in full. Traces are now split into blocks (Python `Traceback`, Java `Caused by:`, Go `goroutine`, `panic:`...) and the innermost frame of each block (last for Python, first for the rest) gets full context. Python exception chains show BOTH crash sites.
+- **`trace --caller-window N` (default 2):** caller frames now show the call line +-2 lines instead of the call line only. Measured on the 14-case suite: window 0 -> 10/14 root-cause lines found, 1 -> 11, 2 -> 12, 3 -> 12 (tokens 2,574 / 2,886 / 3,103 / 3,222). Default 2 is the cheapest setting that reaches 12/14.
+- **Ruby and PHP symbol spans:** `parse_ruby` (matches `end` by indentation, classes/modules/`def self.x`, endless defs) and `parse_php` (visibility/static modifiers, methods inside classes, brace-matched ends). Before, both used the generic fallback with `end_line == line`, so `trace` could not map any frame to a function (RB-1 and PHP-1 returned only line numbers).
+- **PHP stack frames:** `#1 /path/File.php(12): Cls->method()` is now recognised.
+- **Tests: 30 -> 37** (`test_17`-`test_23`: Go, Java, Ruby, PHP, Python chain, no-repo-frames, caller-window). 5 of the 7 fail on v1.7.1.
+- **`tests/bugcases/`:** 14 seeded-bug projects (Python x4, JS x4, Go x2, Java, Ruby, PHP, Rust) with recorded traces and `run_bench.py` (plain grep/Read windows vs lazy-read; pass = the bug line appears in the output). Run: `python3 tests/bugcases/run_bench.py`.
+- **Cache:** skeletons are rebuilt once after the upgrade (version bump).
+- Known limits (unchanged, see bugcases): a bug that is NOT on the stack (GO-2) is not found by `trace`; `find` shows only lines matching the text, so a root-cause line that does not contain the text is not shown (JS-4).
+
 ## Changes in v1.7.1 (Clean Open-Source Release & MIT Licensing)
 - **100% Transparent Python Source:** Completely de-obfuscated `codemap.py`, `docmap.py`, and `tablemap.py` to transparent, human-readable Python 3 standard library code with full AST parsing, complete docstrings, and type hints.
 - **MIT License Added:** Formally released under the standard MIT License with Copyright (c) 2026 Pannawich Kuihaphanich (ZHONGZHEWEI).

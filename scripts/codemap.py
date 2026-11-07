@@ -26,7 +26,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-VERSION = "1.7.1"
+VERSION = "1.7.2"
 
 NOISE_CALLS = {
     "print", "len", "str", "int", "float", "bool", "list", "dict", "set", "tuple",
@@ -792,6 +792,76 @@ def parse_jvm_csharp_swift(source: str) -> Dict[str, Any]:
     }
 
 
+def parse_ruby(source: str) -> Dict[str, Any]:
+    """Ruby: classes/modules/defs with real end lines (matching `end` at the same indentation)."""
+    lines = source.splitlines()
+    re_cls = re.compile(r"^(\s*)(class|module)\s+([A-Z][\w:]*)")
+    re_def = re.compile(r"^(\s*)def\s+(?:self\.)?([A-Za-z_]\w*[?!=]?)\s*(?:\(([^)]*)\))?(.*)$")
+    re_end = re.compile(r"^(\s*)end\b")
+
+    def block_end(idx: int, indent: int) -> int:
+        for j in range(idx + 1, len(lines)):
+            m = re_end.match(lines[j])
+            if m and len(m.group(1)) <= indent:
+                return j + 1
+        return idx + 1
+
+    classes: List[Dict[str, Any]] = []
+    functions: List[Dict[str, Any]] = []
+    for idx, line in enumerate(lines):
+        if line.lstrip().startswith("#"):
+            continue
+        m_c = re_cls.match(line)
+        if m_c:
+            classes.append({"name": m_c.group(3), "kind": m_c.group(2), "line": idx + 1,
+                            "end_line": block_end(idx, len(m_c.group(1))), "methods": []})
+            continue
+        m_d = re_def.match(line)
+        if m_d:
+            indent = len(m_d.group(1))
+            rest = (m_d.group(4) or "").strip()
+            endless = rest.startswith("=") and not rest.startswith("==")
+            end_ln = idx + 1 if endless else block_end(idx, indent)
+            fn = {"name": m_d.group(2), "params": compact_params(m_d.group(3) or ""),
+                  "line": idx + 1, "end_line": end_ln, "calls": []}
+            owner = None
+            for cl in classes:  # innermost class containing this def
+                if cl["line"] < idx + 1 <= cl["end_line"] and (owner is None or cl["line"] > owner["line"]):
+                    owner = cl
+            (owner["methods"] if owner else functions).append(fn)
+    return {"lines": len(lines), "imports": [], "exports": [], "classes": classes,
+            "functions": functions, "doc": ""}
+
+
+def parse_php(source: str) -> Dict[str, Any]:
+    """PHP: classes/interfaces/traits and functions/methods (with visibility modifiers) with brace-matched end lines."""
+    raw_lines = source.splitlines()
+    s_lines = scrub_c_family(source).splitlines()
+    start_d, end_d = compute_brace_depths(s_lines)
+    re_cls = re.compile(r"^\s*(?:(?:abstract|final|readonly)\s+)*(class|interface|trait|enum)\s+([A-Za-z_]\w*)")
+    re_fn = re.compile(r"^\s*(?:(?:public|protected|private|static|final|abstract)\s+)*function\s+&?([A-Za-z_]\w*)\s*\(([^)]*)")
+    classes: List[Dict[str, Any]] = []
+    functions: List[Dict[str, Any]] = []
+    for idx, s_line in enumerate(s_lines):
+        m_c = re_cls.match(s_line)
+        if m_c:
+            classes.append({"name": m_c.group(2), "kind": m_c.group(1), "line": idx + 1,
+                            "end_line": find_block_end_line(s_lines, idx, start_d, end_d), "methods": []})
+            continue
+        m_f = re_fn.match(s_line)
+        if m_f:
+            end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+            fn = {"name": m_f.group(1), "params": compact_params(m_f.group(2)), "line": idx + 1,
+                  "end_line": end_ln, "calls": extract_body_calls(s_lines, idx + 1, end_ln, m_f.group(1))}
+            owner = None
+            for cl in classes:
+                if cl["line"] < idx + 1 <= cl["end_line"] and (owner is None or cl["line"] > owner["line"]):
+                    owner = cl
+            (owner["methods"] if owner else functions).append(fn)
+    return {"lines": len(raw_lines), "imports": [], "exports": [], "classes": classes,
+            "functions": functions, "doc": ""}
+
+
 def parse_generic_fallback(source: str, lang: str) -> Dict[str, Any]:
     lines = source.splitlines()
     classes: List[Dict[str, Any]] = []
@@ -843,6 +913,10 @@ def parse_file(file_path: Path, lang: str) -> Optional[Dict[str, Any]]:
         data = parse_go_rust(source, lang)
     elif lang in ("java", "kotlin", "csharp", "swift"):
         data = parse_jvm_csharp_swift(source)
+    elif lang == "ruby":
+        data = parse_ruby(source)
+    elif lang == "php":
+        data = parse_php(source)
     else:
         data = parse_generic_fallback(source, lang)
 
@@ -1512,6 +1586,8 @@ _TRACE_PATTERNS = [
     re.compile(r'(?:-->|\bat)\s+(?P<f>[^\s:]+\.rs):(?P<l>\d+)'),
     # C/C++/PHP/Ruby: file.ext:LINE
     re.compile(r'(?P<f>[^\s:()]+\.(?:c|h|cc|cpp|hpp|php|rb)):(?P<l>\d+)'),
+    # PHP stack trace:  #1 /a/b.php(12): Cls->method()
+    re.compile(r'^#\d+\s+(?P<f>[^\s()]+\.php)\((?P<l>\d+)\)'),
 ]
 
 
@@ -1530,58 +1606,94 @@ def _match_repo_file(index: Dict[str, Dict[str, Any]], raw: str) -> Optional[str
     return best if best_n >= 1 else None
 
 
-def trace_frames(
-    root_path: Path, index: Dict[str, Dict[str, Any]], text: str,
-    max_lines: int = 40, no_doc: bool = True, window: int = 4, full_frames: bool = False,
-) -> str:
-    """Parse a stack trace; print the enclosing symbol of every in-repo frame (deduplicated),
-    failing lines marked '>>'. Intermediate caller frames are rendered compactly (signature + +-1 line)
-    while the leaf/crashing frame is rendered with full body context. Frames outside the repo are listed in one line."""
-    frames: List[Tuple[str, int]] = []
+_BLOCK_START = re.compile(
+    r"^\s*(Traceback \(most recent call last\)|Caused by:|Exception in thread|goroutine \d+|panic:|thread '.*' panicked)")
+
+
+def _split_trace_blocks(text: str) -> List[Tuple[bool, List[Tuple[str, int]]]]:
+    """Split a trace into blocks (one per Python Traceback / Java 'Caused by' / Go goroutine ...).
+    Returns [(python_style, [(path, line), ...]), ...]. python_style=True means innermost frame is LAST
+    ('most recent call last'); every other runtime lists the innermost frame FIRST."""
+    py_global = "most recent call last" in text
+    blocks: List[Tuple[bool, List[Tuple[str, int]]]] = []
+    cur: Optional[Tuple[bool, List[Tuple[str, int]]]] = None
     for ln in text.splitlines():
+        m_b = _BLOCK_START.match(ln)
+        if m_b:
+            is_py = m_b.group(1).startswith("Traceback")
+            if cur is None or cur[1]:
+                cur = (is_py, [])
+                blocks.append(cur)
+            else:
+                cur = (is_py, cur[1])
+                blocks[-1] = cur
+            continue
         for pat in _TRACE_PATTERNS:
             m = pat.search(ln)
             if m:
-                frames.append((m.group("f"), int(m.group("l"))))
+                if cur is None:
+                    cur = (py_global, [])
+                    blocks.append(cur)
+                cur[1].append((m.group("f"), int(m.group("l"))))
                 break
+    return blocks
+
+
+def trace_frames(
+    root_path: Path, index: Dict[str, Dict[str, Any]], text: str,
+    max_lines: int = 40, no_doc: bool = True, window: int = 4, full_frames: bool = False,
+    caller_window: int = 2,
+) -> str:
+    """Parse a stack trace; print the enclosing symbol of every in-repo frame (deduplicated),
+    failing lines marked '>>'. The crashing (innermost) frame of each trace block is rendered with full
+    context; caller frames are rendered compactly (signature + failing line +- caller_window lines).
+    Innermost = last frame for Python, first frame for Node/Java/Go/Rust/Ruby/PHP/C. Frames outside the
+    repo are listed in one line."""
+    blocks = _split_trace_blocks(text)
+    n_frames = sum(len(b[1]) for b in blocks)
     err = ""
     for ln in reversed(text.strip().splitlines()):
         if re.match(r"^\s*[\w.]+(Error|Exception|Warning|Exit|Interrupt)\b|^\s*(panic|Uncaught|Caused by|thread .* panicked)", ln):
             err = ln.strip()
             break
-    if not frames:
+    if not n_frames:
         return "No stack frames recognized in input (supported: Python, Node/V8, Java/Kotlin/C#, Go, Rust, C/C++/PHP/Ruby)."
     grouped: Dict[Tuple[str, Tuple[int, int, str]], List[int]] = {}
     order: List[Tuple[str, Tuple[int, int, str]]] = []
+    leaf_keys = set()
     loose: List[str] = []
     external: List[str] = []
-    for raw, line_no in frames:
-        rel = _match_repo_file(index, raw)
-        if not rel:
-            external.append(f"{Path(raw).name}:{line_no}")
-            continue
-        sp = _enclosing_symbol(index[rel], line_no)
-        if not sp:
-            loose.append(f"{rel}:{line_no}")
-            continue
-        key = (rel, sp)
-        if key not in grouped:
-            grouped[key] = []
-            order.append(key)
-        if line_no not in grouped[key]:
-            grouped[key].append(line_no)
-    out = [f"# TRACE {len(frames)} frame(s): {len(order)} symbol(s) in repo"
+    for is_py, frames in blocks:
+        block_keys: List[Tuple[str, Tuple[int, int, str]]] = []
+        for raw, line_no in frames:
+            rel = _match_repo_file(index, raw)
+            if not rel:
+                external.append(f"{Path(raw).name}:{line_no}")
+                continue
+            sp = _enclosing_symbol(index[rel], line_no)
+            if not sp:
+                loose.append(f"{rel}:{line_no}")
+                continue
+            key = (rel, sp)
+            block_keys.append(key)
+            if key not in grouped:
+                grouped[key] = []
+                order.append(key)
+            if line_no not in grouped[key]:
+                grouped[key].append(line_no)
+        if block_keys:
+            leaf_keys.add(block_keys[-1] if is_py else block_keys[0])
+    out = [f"# TRACE {n_frames} frame(s): {len(order)} symbol(s) in repo"
            + (f" | error: {err[:160]}" if err else "")]
-    for idx, key in enumerate(order):
-        is_leaf = (idx == len(order) - 1) or full_frames
-        f_max = max_lines if is_leaf else 2
-        f_win = window if is_leaf else 0
+    for key in order:
+        is_leaf = key in leaf_keys or full_frames
         out.append(_render_symbol(
-            root_path, index, key[0], key[1], grouped[key], f_max,
-            window=f_win, no_doc=no_doc, show_context=is_leaf,
+            root_path, index, key[0], key[1], grouped[key],
+            max_lines if is_leaf else 2,
+            window=window if is_leaf else caller_window, no_doc=no_doc, show_context=is_leaf,
         ))
     if loose:
-        out.append("# MODULE-LEVEL frames: " + ", ".join(loose))
+        out.append("# MODULE-LEVEL frames: " + ", ".join(dict.fromkeys(loose)))
     if external:
         uniq = list(dict.fromkeys(external))
         out.append(f"# OUTSIDE repo (skipped, {len(uniq)}): " + ", ".join(uniq[:8]))
@@ -1728,6 +1840,7 @@ def main() -> int:
     p_trace.add_argument("--window", type=int, default=4, help="Lines of context each side of a failing line in long leaf symbols")
     p_trace.add_argument("--no-doc", action="store_true", default=True, help="Drop Python docstrings (default in v1.7.0)")
     p_trace.add_argument("--with-doc", action="store_true", help="Include Python docstrings in output")
+    p_trace.add_argument("--caller-window", type=int, default=2, help="Lines of context each side of the call line in caller (non-crashing) frames")
     p_trace.add_argument("--full-frames", action="store_true", help="Render full window for intermediate caller frames too")
     p_trace.add_argument("--exclude", action="append", default=[], metavar="GLOB")
 
@@ -1794,7 +1907,8 @@ def main() -> int:
         use_no_doc = not getattr(args, "with_doc", False)
         data = Path(args.file).read_text(encoding="utf-8", errors="replace") if args.file else sys.stdin.read()
         print(trace_frames(target_path, index, data, max_lines=args.max_lines, no_doc=use_no_doc,
-                           window=args.window, full_frames=getattr(args, "full_frames", False)))
+                           window=args.window, full_frames=getattr(args, "full_frames", False),
+                           caller_window=args.caller_window))
     elif cmd == "history":
         print(symbol_history(target_path, index, args.symbol, limit=args.limit))
 

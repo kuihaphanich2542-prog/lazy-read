@@ -1,10 +1,10 @@
-# Lazy-Read (lazy-read v1.7.1)
+# Lazy-Read (lazy-read v1.7.2)
 
 <p align="left">
   <a href="https://github.com/kuihaphanich2542-prog/lazy-read/stargazers"><img src="https://img.shields.io/github/stars/kuihaphanich2542-prog/lazy-read?style=flat-square&logo=github&color=3fb950" alt="GitHub Stars" /></a>
-  <a href="tests"><img src="https://img.shields.io/badge/tests-30%2F30%20passed-3fb950?style=flat-square" alt="Tests" /></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-37%2F37%20passed-3fb950?style=flat-square" alt="Tests" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue?style=flat-square&logo=python" alt="Python" /></a>
-  <a href="CHANGES.md"><img src="https://img.shields.io/badge/release-v1.7.1-blueviolet?style=flat-square" alt="Version" /></a>
+  <a href="CHANGES.md"><img src="https://img.shields.io/badge/release-v1.7.2-blueviolet?style=flat-square" alt="Version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-informational?style=flat-square" alt="License" /></a>
 </p>
 
@@ -73,10 +73,10 @@ Savings apply to tokens the AI reads, not tokens it writes.
 
 ---
 
-## Test and Benchmark Results (30/30 Tests Passed)
+## Test and Benchmark Results (37/37 Tests Passed)
 
 Verified on macOS Darwin 24.22.1 / Linux (Python 3.12+).
-All 30 unit tests pass 100% (16 code tests + 14 doc/table tests).
+All 37 unit tests pass 100% (23 code tests + 14 doc/table tests).
 
 ### 1. Real-World Debug Benchmark (4 Scenarios)
 
@@ -88,6 +88,18 @@ Tested against Python standard library copy with a seeded logic defect (`end != 
 | 2. Stack Trace (Multi-frame `loads` -> `decode`) | ~170 tok (2 calls: read each frame) | ~334 tok (1 call, full frames) | ~144 tok (1 call) | -15% vs manual / -57% vs v1.6 | Leaf-Frame Focus (full crash frame + compact callers) |
 | 3. Last Function Modifier (`JSONDecoder.decode`) | ~3,660 tok (`git log -p -3`) | ~79–90 tok (`history`, 1 call) | ~79–90 tok (`history`, 1 call) | -97.8% | Function-level `git log -L` diff extraction |
 | 4. Broad Query (40 hits in 18 functions) | ~600 tok (`grep -rn`, noisy, no func context) | ~957 tok / ~2,869 tok (docstrings first) | ~196 tok (1 call) | -67% vs grep / -80% to -93% vs v1.6 | Code-Hit Priority + Adaptive Compact Mode |
+
+### 1b. 14-Case Bug Suite (v1.7.2, `python3 tests/bugcases/run_bench.py`)
+
+Seeded bugs in Python, JS, Go, Java, Ruby, PHP and Rust. "Found" = the root-cause line appears in the output (tokens ~ chars/4, 1 run).
+
+| Method | Total tokens | Root-cause line found |
+|---|---|---|
+| Plain: grep + read +-4 lines per frame | 3,517 | 11 / 14 |
+| Plain: grep + read +-8 lines per frame | 5,141 | 13 / 14 |
+| lazy-read v1.7.2 (`trace` / `find`) | 3,103 | 12 / 14 |
+
+Misses: GO-2 (root cause is not on the stack) and JS-4 (`find "slice("` lists matching lines only). v1.7.1 found 9 / 14 (Ruby, PHP, Go crash frame).
 
 ### 2. Multi-Modal Token Savings
 

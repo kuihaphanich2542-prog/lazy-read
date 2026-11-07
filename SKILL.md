@@ -3,7 +3,7 @@ name: lazy-read
 description: "Cut input tokens when exploring or reading large inputs. Code repos: skeleton map + surgical symbol slices. Long documents (md, txt, html, docx, pdf): outline then read one section. Tables (csv, xlsx): schema and aggregates instead of rows. Use before reading any big file."
 ---
 
-# Lazy-Read (v1.7.1) — Read the Map First, Then Slice
+# Lazy-Read (v1.7.2) — Read the Map First, Then Slice
 
 Instead of loading whole files, read a compact index first, then pull only the exact lines, section or rows needed. Three read-only helpers, Python 3 standard library only, no network, nothing is modified:
 
@@ -36,12 +36,12 @@ Flags: `map --mode ultra|full|lite`, `--lean`, `--full-detail`, `--no-cache`; `m
 
 Caveats: JS/TS/C-family/etc. use regex heuristics (Python uses real `ast`); the vendor skip hides directories named `lodash`, `third_party`, `3rdparty`, `externals`, `bower_components` (map that path directly if it is your own code). When writing new code from the skeleton, `inspect` the real functions you will call so signatures are exact.
 
-### Debugging a bug (v1.7.0): error message / stack trace -> function -> what changed
+### Debugging a bug (v1.7.2): error message / stack trace -> function -> what changed
 
 Run the failing command with Bash first; these commands then turn its output into the exact code to read.
 
 - `codemap.py find <repo> "<error text>"` : text/regex search over source files only (skips .pyc, binaries, vendored dirs). Hits are grouped by enclosing function, ranked with executable code hits ahead of docstring/comment mentions, docstrings stripped by default (`--with-doc` to keep), hit lines marked `>>`. Pinpoint searches (`<=2` symbols) show the function window + `# CONTEXT`; broad searches (`>=3` symbols) automatically switch to Compact Hit Mode (~196 tok vs ~600 tok for `grep -rn`, pass `--full-symbol` for full bodies). Flags: `--regex`, `-i`, `--max-symbols N` (default 6), `--max-lines N` (default 25), `--with-doc`, `--full-symbol`.
-- `codemap.py trace <repo> --file trace.txt` (or pipe the trace on stdin): maps every in-repo frame (Python, Node, Java/Kotlin/C#, Go, Rust, C/C++/PHP/Ruby) to its enclosing function, failing line marked `>>`; frames outside the repo are listed in one line. Uses Leaf-Frame Focus by default: intermediate caller frames render compactly (`# SYMBOL` + `>>` call line) while the leaf/crashing frame renders full context (~144–154 tok in 1 call vs ~170 tok for reading ±4 lines per frame by hand and ~333 tok in v1.6.0; pass `--full-frames` for full caller frames).
+- `codemap.py trace <repo> --file trace.txt` (or pipe the trace on stdin): maps every in-repo frame (Python, Node, Java/Kotlin/C#, Go, Rust, Ruby, PHP, C/C++) to its enclosing function, failing line marked `>>`; frames outside the repo are listed in one line. The crashing frame of each trace block (last frame for Python, first for every other runtime; Python chains and Java `Caused by:` show every crash site) gets full context; caller frames show the call line +-`--caller-window N` (default 2). If the root cause is not on the stack, use `find` or `inspect` next.
 - `codemap.py history <repo> <Symbol> [-n 5]` : last commits that touched that function's exact lines plus the diff of the newest one (`git log -L`, read-only). Answers "what changed here recently?" at ~2% of the cost of `git log -p` (~79–90 tok vs ~3,660 tok).
 
 Then edit with your normal tools and re-run the failing command. `search` finds symbol names only; for message text use `find`.

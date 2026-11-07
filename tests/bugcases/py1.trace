@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import jsonpkg, jsonpkg.encoder as e; e.c_make_encoder=None; jsonpkg.dumps({'a':1}, indent=2)
+                                                                 ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "py1/jsonpkg/__init__.py", line 242, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "py1/jsonpkg/encoder.py", line 204, in encode
+    chunks = list(chunks)
+  File "py1/jsonpkg/encoder.py", line 435, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "py1/jsonpkg/encoder.py", line 386, in _iterencode_dict
+    yield _encoder(key + 1)
+                   ~~~~^~~
+TypeError: can only concatenate str (not "int") to str

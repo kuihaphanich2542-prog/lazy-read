@@ -1,0 +1,10 @@
+panic: assignment to entry in nil map
+
+goroutine 1 [running]:
+demo2/store.(*Counter).Inc(...)
+	go2/store/store.go:15
+main.record(...)
+	go2/main.go:11
+main.main()
+	go2/main.go:17 +0x9c
+exit status 2

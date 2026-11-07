@@ -520,5 +520,124 @@ public class OrderService {
             self.assertLess(len(out_compact), len(out_full))
 
 
+    # ---- v1.7.2: crash-frame detection per runtime, Ruby/PHP spans, caller window ----------
+    def _trace(self, root, text, *extra):
+        return subprocess.run([sys.executable, SCRIPT_PATH, "trace", str(root), *extra],
+                              input=text, capture_output=True, text=True).stdout
+
+    def _write(self, root, rel, body):
+        f = pathlib.Path(root) / rel
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(body, encoding="utf-8")
+
+    def test_17_go_trace_crash_frame_is_first_not_last(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._write(tmp, "batch/batch.go",
+                "package batch\n\nfunc Totals(chunks [][]int) []int {\n"
+                "\tres := make([]int, len(chunks)-1)\n\tfor i, c := range chunks {\n"
+                "\t\tres[i] = len(c)\n\t}\n\treturn res\n}\n")
+            self._write(tmp, "main.go",
+                "package main\n\nfunc run() {\n\tprintln(1)\n\tprintln(2)\n\tprintln(3)\n\tprintln(4)\n"
+                "\tprintln(5)\n\tbatch.Totals(nil)\n}\n\nfunc main() {\n\trun()\n}\n")
+            trace = ("panic: runtime error: index out of range [2] with length 2\n\ngoroutine 1 [running]:\n"
+                     "demo/batch.Totals(...)\n\t/x/demo/batch/batch.go:6\n"
+                     "main.run(...)\n\t/x/demo/main.go:9 +0x1be\n"
+                     "main.main()\n\t/x/demo/main.go:14 +0x52\nexit status 2\n")
+            out = self._trace(tmp, trace)
+            # crashing frame (Totals, listed FIRST by Go) gets full body incl. the root-cause line
+            self.assertIn("len(chunks)-1", out)
+            self.assertIn("[Totals]", out)
+            # outer main() is only a compact caller frame
+            self.assertNotIn("println(1)", out)
+
+    def test_18_java_trace_with_caused_by_marks_each_crash_frame(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._write(tmp, "com/demo/Svc.java",
+                "package com.demo;\n\npublic class Svc {\n    String a(String s) {\n        String t = s.trim();\n"
+                "        return t.toUpperCase();\n    }\n}\n")
+            self._write(tmp, "com/demo/Main.java",
+                "package com.demo;\n\npublic class Main {\n    public static void main(String[] a) {\n"
+                "        int x = 1;\n        int y = 2;\n        int z = 3;\n        int w = 4;\n"
+                "        new Svc().a(null);\n    }\n}\n")
+            trace = ('Exception in thread "main" java.lang.IllegalStateException: boom\n'
+                     "\tat com.demo.Svc.a(Svc.java:6)\n\tat com.demo.Main.main(Main.java:9)\n")
+            out = self._trace(tmp, trace)
+            self.assertIn("return t.toUpperCase();", out)     # innermost frame first in Java
+            self.assertNotIn("int x = 1;", out)               # caller main() stays compact
+
+    def test_19_ruby_spans_and_trace(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._write(tmp, "main.rb",
+                "def shout(t)\n  t.upcase\nend\n\nclass Box\n  def pick(h, k)\n    v = h[k.to_sym]\n"
+                "    shout(v)\n  end\nend\n\nBox.new.pick({}, 'a')\n")
+            res = codemap.parse_ruby(pathlib.Path(tmp, "main.rb").read_text())
+            self.assertEqual(res["functions"][0]["name"], "shout")
+            self.assertEqual((res["functions"][0]["line"], res["functions"][0]["end_line"]), (1, 3))
+            self.assertEqual(res["classes"][0]["name"], "Box")
+            self.assertEqual(res["classes"][0]["methods"][0]["name"], "pick")
+            self.assertEqual(res["classes"][0]["methods"][0]["end_line"], 9)
+            trace = ("main.rb:2:in 'shout': undefined method 'upcase' for nil (NoMethodError)\n"
+                     "\tfrom main.rb:8:in 'pick'\n\tfrom main.rb:12:in '<main>'\n")
+            out = self._trace(tmp, trace)
+            self.assertIn("[shout]", out)
+            self.assertIn("[Box.pick]", out)
+            self.assertIn("k.to_sym", out)                    # root cause line one above the call
+
+    def test_20_php_methods_with_modifiers_and_hash_frames(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._write(tmp, "Calc.php",
+                "<?php\nclass Calc {\n    public function ratio(int $a, int $b): float {\n"
+                "        return intdiv($a, $b);\n    }\n}\n")
+            self._write(tmp, "main.php",
+                "<?php\nfunction run() {\n    $c = new Calc();\n    return $c->ratio(10, 0);\n}\necho run();\n")
+            res = codemap.parse_php(pathlib.Path(tmp, "Calc.php").read_text())
+            self.assertEqual(res["classes"][0]["methods"][0]["name"], "ratio")
+            self.assertEqual(res["classes"][0]["methods"][0]["end_line"], 5)
+            trace = ("PHP Fatal error:  Uncaught DivisionByZeroError: Division by zero in /x/Calc.php:4\n"
+                     "Stack trace:\n#0 /x/Calc.php(4): intdiv()\n#1 /x/main.php(4): Calc->ratio()\n"
+                     "#2 /x/main.php(6): run()\n#3 {main}\n")
+            out = self._trace(tmp, trace)
+            self.assertIn("[Calc.ratio]", out)
+            self.assertIn("[run]", out)
+
+    def test_21_python_exception_chain_shows_both_crash_frames(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._write(tmp, "a.py", "def parse(x):\n    return int(x)\n")
+            self._write(tmp, "b.py",
+                "from a import parse\n\n\ndef load(c):\n    try:\n        return parse(c)\n"
+                "    except ValueError as e:\n        raise RuntimeError('bad') from e\n")
+            self._write(tmp, "main.py", "from b import load\n\nprint(load('12px'))\n")
+            trace = ("Traceback (most recent call last):\n  File \"b.py\", line 6, in load\n    return parse(c)\n"
+                     "  File \"a.py\", line 2, in parse\n    return int(x)\nValueError: bad literal\n\n"
+                     "The above exception was the direct cause of the following exception:\n\n"
+                     "Traceback (most recent call last):\n  File \"main.py\", line 3, in <module>\n"
+                     "    print(load('12px'))\n  File \"b.py\", line 8, in load\n"
+                     "    raise RuntimeError('bad') from e\nRuntimeError: bad\n")
+            out = self._trace(tmp, trace)
+            self.assertIn("[parse]", out)
+            self.assertIn("return int(x)", out)               # original crash site, full context
+            self.assertIn("[load]", out)
+
+    def test_22_trace_without_repo_frames_does_not_crash(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._write(tmp, "a.py", "def f():\n    return 1\n")
+            trace = 'Traceback (most recent call last):\n  File "/usr/lib/python3/other.py", line 5, in x\nKeyError: 1\n'
+            res = subprocess.run([sys.executable, SCRIPT_PATH, "trace", tmp], input=trace, capture_output=True, text=True)
+            self.assertEqual(res.returncode, 0)
+            self.assertIn("OUTSIDE repo", res.stdout)
+
+    def test_23_caller_window_option_controls_caller_context(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._write(tmp, "m.py",
+                "def leaf(x):\n    return x.boom\n\n\ndef caller(v):\n    a = 1\n    b = 2\n"
+                "    c = v.strip() + 'px'\n    d = 4\n    return leaf(c)\n")
+            trace = ('Traceback (most recent call last):\n  File "m.py", line 10, in caller\n'
+                     '    return leaf(c)\n  File "m.py", line 2, in leaf\n    return x.boom\nAttributeError: boom\n')
+            narrow = self._trace(tmp, trace, "--caller-window", "0")
+            wide = self._trace(tmp, trace, "--caller-window", "3")
+            self.assertNotIn("+ 'px'", narrow)
+            self.assertIn("+ 'px'", wide)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

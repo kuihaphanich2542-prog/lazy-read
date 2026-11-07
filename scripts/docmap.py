@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 from xml.etree import ElementTree as ET
 
-VERSION = "1.7.1"
+VERSION = "1.7.2"
 TOK = 4  # approx chars per token (same convention as lazy-read)
 
 Head = Tuple[int, str, int]  # (level, title, 1-based line index)

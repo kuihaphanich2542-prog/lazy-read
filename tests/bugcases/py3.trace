@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import jsonpkg.scanner as s, jsonpkg.decoder as d; s.make_scanner=s.py_make_scanner; d.JSONDecoder().decode('[1,2]')
+                                                                                         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "py3/jsonpkg/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "py3/jsonpkg/decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+  File "py3/jsonpkg/scanner.py", line 67, in scan_once
+    return _scan_once(string, idx)
+  File "py3/jsonpkg/scanner.py", line 40, in _scan_once
+    return parse_array((string, idx + 1), _scan_once)
+  File "py3/jsonpkg/decoder.py", line 257, in JSONArray
+    raise JSONDecodeError("Illegal trailing comma before end of array", s, comma_idx)
+jsonpkg.decoder.JSONDecodeError: Illegal trailing comma before end of array: line 1 column 4 (char 3)

@@ -1,0 +1,17 @@
+js/src/utils/format.js:14
+    display: user.profile.name,
+                          ^
+
+TypeError: Cannot read properties of undefined (reading 'name')
+    at formatUser (js/src/utils/format.js:14:27)
+    at js/src/services/userService.js:9:24
+    at Array.map (<anonymous>)
+    at Object.listUsers (js/src/services/userService.js:9:13)
+    at Object.handleList (js/src/routes/users.js:4:21)
+    at dispatch (js/src/server.js:4:43)
+    at Object.<anonymous> (js/src/server.js:7:28)
+    at Module._compile (node:internal/modules/cjs/loader:1781:14)
+    at Object..js (node:internal/modules/cjs/loader:1913:10)
+    at Module.load (node:internal/modules/cjs/loader:1505:32)
+
+Node.js v22.23.4

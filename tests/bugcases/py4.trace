@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "py4/app/config.py", line 10, in load_width
+    return parse_int(cfg["width"])
+  File "py4/app/parse.py", line 6, in parse_int
+    return int(text)
+ValueError: invalid literal for int() with base 10: '120px'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "py4/main.py", line 3, in <module>
+    print(normalize({"width": " 120 "}))
+          ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "py4/app/normalize.py", line 9, in normalize
+    return load_width(cfg)
+  File "py4/app/config.py", line 12, in load_width
+    raise ConfigError("width must be an integer") from exc
+app.config.ConfigError: width must be an integer

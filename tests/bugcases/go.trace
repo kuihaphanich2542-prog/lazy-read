@@ -1,0 +1,10 @@
+panic: runtime error: index out of range [2] with length 2
+
+goroutine 1 [running]:
+demo/internal/batch.Totals(...)
+	go/internal/batch/batch.go:24
+main.run({0xc0000171d0, 0x5, 0x5})
+	go/main.go:11 +0x1be
+main.main()
+	go/main.go:15 +0x52
+exit status 2

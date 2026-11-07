@@ -1,0 +1,7 @@
+PHP Fatal error:  Uncaught DivisionByZeroError: Division by zero in php1/Calc.php:5
+Stack trace:
+#0 php1/Calc.php(5): intdiv()
+#1 php1/main.php(5): Calc->ratio()
+#2 php1/main.php(7): run()
+#3 {main}
+  thrown in php1/Calc.php on line 5
