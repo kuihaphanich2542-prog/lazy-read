@@ -1559,9 +1559,13 @@ def find_text(
         hl = code_hits_map.get(key, all_hl)
         if broad_mode and len(hl) > 2:
             hl = hl[:2]
+        sym_len = sp[1] - sp[0] + 1
+        is_tiny = sym_len <= 6
+        cur_max = 0 if is_tiny else eff_max_lines
+        cur_win = 5 if is_tiny else eff_window
         out.append(_render_symbol(
-            root_path, index, rel_path, sp, hl, eff_max_lines,
-            window=eff_window, no_doc=no_doc, show_context=show_ctx,
+            root_path, index, rel_path, sp, hl, cur_max,
+            window=cur_win, no_doc=no_doc, show_context=show_ctx,
         ))
     if len(ordered_items) > max_symbols:
         rest = [f"{p}:{s[2]}" for (p, s), _ in ordered_items[max_symbols:]]
@@ -1661,6 +1665,7 @@ def trace_frames(
     grouped: Dict[Tuple[str, Tuple[int, int, str]], List[int]] = {}
     order: List[Tuple[str, Tuple[int, int, str]]] = []
     leaf_keys = set()
+    parent_keys = set()
     loose: List[str] = []
     external: List[str] = []
     for is_py, frames in blocks:
@@ -1682,15 +1687,24 @@ def trace_frames(
             if line_no not in grouped[key]:
                 grouped[key].append(line_no)
         if block_keys:
-            leaf_keys.add(block_keys[-1] if is_py else block_keys[0])
+            if is_py:
+                leaf_keys.add(block_keys[-1])
+                if len(block_keys) >= 2:
+                    parent_keys.add(block_keys[-2])
+            else:
+                leaf_keys.add(block_keys[0])
+                if len(block_keys) >= 2:
+                    parent_keys.add(block_keys[1])
     out = [f"# TRACE {n_frames} frame(s): {len(order)} symbol(s) in repo"
            + (f" | error: {err[:160]}" if err else "")]
     for key in order:
         is_leaf = key in leaf_keys or full_frames
+        is_parent = key in parent_keys
+        cw = caller_window if is_parent else max(0, caller_window - 2)
         out.append(_render_symbol(
             root_path, index, key[0], key[1], grouped[key],
             max_lines if is_leaf else 2,
-            window=window if is_leaf else caller_window, no_doc=no_doc, show_context=is_leaf,
+            window=window if is_leaf else cw, no_doc=no_doc, show_context=is_leaf,
         ))
     if loose:
         out.append("# MODULE-LEVEL frames: " + ", ".join(dict.fromkeys(loose)))

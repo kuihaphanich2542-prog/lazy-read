@@ -95,11 +95,11 @@ Seeded bugs in Python, JS, Go, Java, Ruby, PHP and Rust. "Found" = the root-caus
 
 | Method | Total tokens | Root-cause line found |
 |---|---|---|
-| Plain: grep + read +-4 lines per frame | 3,517 | 11 / 14 |
-| Plain: grep + read +-8 lines per frame | 5,141 | 13 / 14 |
-| lazy-read v1.7.2 (`trace` / `find`) | 3,103 | 12 / 14 |
+| Plain: grep + read +-4 lines per frame | 3,411 | 11 / 14 |
+| Plain: grep + read +-8 lines per frame | 5,035 | 13 / 14 |
+| lazy-read v1.7.2 (`trace` / `find`) | 2,859 | 13 / 14 |
 
-Misses: GO-2 (root cause is not on the stack) and JS-4 (`find "slice("` lists matching lines only). v1.7.1 found 9 / 14 (Ruby, PHP, Go crash frame).
+Misses: GO-2 only (root cause is in an uncalled factory, not present on the call stack). JS-4 is captured via tiny-symbol preservation.
 
 ### 2. Multi-Modal Token Savings
 
