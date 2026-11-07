@@ -184,6 +184,26 @@ class TestBenchmarkShowcase(unittest.TestCase):
         self.assertIn("_encoder(key + 1)", trace_out)
         self.assertLessEqual(len(trace_out) // 4, 400, "Trace should be compact (under 400 tokens)")
 
+    def test_06_benchmark_showcase_runner_execution(self):
+        """
+        Verify that run_benchmark_showcase.py executes cleanly and renders
+        the dual-card comparison matching the official infographic.
+        """
+        runner_path = os.path.join(ROOT_DIR, "tests", "run_benchmark_showcase.py")
+        proc = subprocess.run(
+            [sys.executable, runner_path],
+            capture_output=True,
+            text=True,
+            cwd=ROOT_DIR,
+        )
+        self.assertEqual(proc.returncode, 0, f"run_benchmark_showcase failed: {proc.stderr}")
+        out = proc.stdout
+        self.assertIn("BENCHMARK SHOWCASE: Standard AI Exploration vs. lazy-read v1.7.3", out)
+        self.assertIn("Standard AI Ingestion", out)
+        self.assertIn("lazy-read Workflow", out)
+        self.assertIn("99.34% SAVED", out)
+        self.assertIn("150.4x smaller!", out)
+
 
 if __name__ == "__main__":
     unittest.main()

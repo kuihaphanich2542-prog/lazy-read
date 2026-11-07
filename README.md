@@ -2,7 +2,7 @@
 
 <p align="left">
   <a href="https://github.com/kuihaphanich2542-prog/lazy-read/stargazers"><img src="https://img.shields.io/github/stars/kuihaphanich2542-prog/lazy-read?style=flat-square&logo=github&color=3fb950" alt="GitHub Stars" /></a>
-  <a href="tests"><img src="https://img.shields.io/badge/tests-42%2F42%20passed-3fb950?style=flat-square" alt="Tests" /></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-43%2F43%20passed-3fb950?style=flat-square" alt="Tests" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue?style=flat-square&logo=python" alt="Python" /></a>
   <a href="CHANGES.md"><img src="https://img.shields.io/badge/release-v1.7.3-blueviolet?style=flat-square" alt="Version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-informational?style=flat-square" alt="License" /></a>
@@ -116,6 +116,14 @@ Seeded bugs across 7 runtimes (Python, Node, Go, Java, Ruby, PHP, Rust) tested d
 - **Massive Token Savings:** Slashes token usage from 5,035 tokens down to **2,859 tokens (-43.2% / saving 2,176 tokens)** compared to Plain ±8 lines.
 - **Critical Wins:** Uniquely captures **PY-3** (which both Plain ±4 and ±8 completely miss) and captures **JS-4** via tiny-symbol preservation without truncating adjacent boundary logic.
 - **Theoretical Ceiling (GO-2):** Only GO-2 is missed across the suite because the nil map initialization resides in an uninvoked factory function completely absent from the panic call stack.
+
+### 1c. Head-to-Head Terminal Showcase (`python3 tests/run_benchmark_showcase.py`)
+
+Run the automated dual-card benchmark simulation directly in your terminal:
+```bash
+python3 tests/run_benchmark_showcase.py
+```
+This renders the side-by-side execution telemetry, agent investigation traces, and 200k context window saturation meters matching the visual infographic above.
 
 ### 2. Multi-Modal Token Savings
 
