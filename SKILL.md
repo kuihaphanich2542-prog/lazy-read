@@ -3,7 +3,7 @@ name: lazy-read
 description: "Cut input tokens when exploring or reading large inputs. Code repos: skeleton map + surgical symbol slices. Long documents (md, txt, html, docx, pdf): outline then read one section. Tables (csv, xlsx): schema and aggregates instead of rows. Use before reading any big file."
 ---
 
-# Lazy-Read (v1.7.2) — Read the Map First, Then Slice
+# Lazy-Read (v1.7.3) — Read the Map First, Then Slice
 
 Instead of loading whole files, read a compact index first, then pull only the exact lines, section or rows needed. Three read-only helpers, Python 3 standard library only, no network, nothing is modified:
 
@@ -36,7 +36,7 @@ Flags: `map --mode ultra|full|lite`, `--lean`, `--full-detail`, `--no-cache`; `m
 
 Caveats: JS/TS/C-family/etc. use regex heuristics (Python uses real `ast`); the vendor skip hides directories named `lodash`, `third_party`, `3rdparty`, `externals`, `bower_components` (map that path directly if it is your own code). When writing new code from the skeleton, `inspect` the real functions you will call so signatures are exact.
 
-### Debugging a bug (v1.7.2): error message / stack trace -> function -> what changed
+### Debugging a bug (v1.7.3): error message / stack trace -> function -> what changed
 
 Run the failing command with Bash first; these commands then turn its output into the exact code to read.
 

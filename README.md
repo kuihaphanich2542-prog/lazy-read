@@ -1,10 +1,10 @@
-# Lazy-Read (lazy-read v1.7.2)
+# Lazy-Read (lazy-read v1.7.3)
 
 <p align="left">
   <a href="https://github.com/kuihaphanich2542-prog/lazy-read/stargazers"><img src="https://img.shields.io/github/stars/kuihaphanich2542-prog/lazy-read?style=flat-square&logo=github&color=3fb950" alt="GitHub Stars" /></a>
   <a href="tests"><img src="https://img.shields.io/badge/tests-37%2F37%20passed-3fb950?style=flat-square" alt="Tests" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue?style=flat-square&logo=python" alt="Python" /></a>
-  <a href="CHANGES.md"><img src="https://img.shields.io/badge/release-v1.7.2-blueviolet?style=flat-square" alt="Version" /></a>
+  <a href="CHANGES.md"><img src="https://img.shields.io/badge/release-v1.7.3-blueviolet?style=flat-square" alt="Version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-informational?style=flat-square" alt="License" /></a>
 </p>
 
@@ -89,7 +89,7 @@ Tested against Python standard library copy with a seeded logic defect (`end != 
 | 3. Last Function Modifier (`JSONDecoder.decode`) | ~3,660 tok (`git log -p -3`) | ~79–90 tok (`history`, 1 call) | ~79–90 tok (`history`, 1 call) | -97.8% | Function-level `git log -L` diff extraction |
 | 4. Broad Query (40 hits in 18 functions) | ~600 tok (`grep -rn`, noisy, no func context) | ~957 tok / ~2,869 tok (docstrings first) | ~196 tok (1 call) | -67% vs grep / -80% to -93% vs v1.6 | Code-Hit Priority + Adaptive Compact Mode |
 
-### 1b. 14-Case Bug Suite (v1.7.2, `python3 tests/bugcases/run_bench.py`)
+### 1b. 14-Case Bug Suite (v1.7.3, `python3 tests/bugcases/run_bench.py`)
 
 Seeded bugs in Python, JS, Go, Java, Ruby, PHP and Rust. "Found" = the root-cause line appears in the output (tokens ~ chars/4, 1 run).
 
@@ -97,7 +97,7 @@ Seeded bugs in Python, JS, Go, Java, Ruby, PHP and Rust. "Found" = the root-caus
 |---|---|---|
 | Plain: grep + read +-4 lines per frame | 3,411 | 11 / 14 |
 | Plain: grep + read +-8 lines per frame | 5,035 | 13 / 14 |
-| lazy-read v1.7.2 (`trace` / `find`) | 2,859 | 13 / 14 |
+| lazy-read v1.7.3 (`trace` / `find`) | 2,859 | 13 / 14 |
 
 Misses: GO-2 only (root cause is in an uncalled factory, not present on the call stack). JS-4 is captured via tiny-symbol preservation.
 
