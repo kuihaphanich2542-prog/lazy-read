@@ -178,7 +178,7 @@ def render_showcase(m):
         ),
         (
             f"{RED}{BOLD}[Failure] Out of memory & token budget depleted{RESET}",
-            f"{GREEN}{BOLD}[Success] 42/42 unit tests passed & 13/14 bugs caught{RESET}",
+            f"{GREEN}{BOLD}[Success] 43/43 unit tests passed & 13/14 bugs caught{RESET}",
         ),
     ]
     for l_text, r_text in traces:

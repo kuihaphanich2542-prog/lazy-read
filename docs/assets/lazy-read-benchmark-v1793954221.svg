@@ -165,7 +165,7 @@
       <text x="28" y="276" fill="#c9d1d9">[Turn 1] codemap inspect finds exact crashing function in 1 call</text>
       <text x="28" y="296" fill="#c9d1d9">[Turn 2] docmap slice pulls exact specification requirement</text>
       <text x="28" y="316" fill="#c9d1d9">[Turn 3] tablemap agg verifies numbers without dumping raw data</text>
-      <text x="28" y="336" fill="#3fb950">[Success] 42/42 unit tests passed &amp; 13/14 bug cases captured</text>
+      <text x="28" y="336" fill="#3fb950">[Success] 43/43 unit tests passed &amp; 13/14 bug cases captured</text>
     </g>
 
     <!-- Section 3: Outcome Box -->
