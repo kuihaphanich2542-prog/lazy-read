@@ -2,7 +2,7 @@
 
 <p align="left">
   <a href="https://github.com/kuihaphanich2542-prog/lazy-read/stargazers"><img src="https://img.shields.io/github/stars/kuihaphanich2542-prog/lazy-read?style=flat-square&logo=github&color=3fb950" alt="GitHub Stars" /></a>
-  <a href="tests"><img src="https://img.shields.io/badge/tests-37%2F37%20passed-3fb950?style=flat-square" alt="Tests" /></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-42%2F42%20passed-3fb950?style=flat-square" alt="Tests" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue?style=flat-square&logo=python" alt="Python" /></a>
   <a href="CHANGES.md"><img src="https://img.shields.io/badge/release-v1.7.3-blueviolet?style=flat-square" alt="Version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-informational?style=flat-square" alt="License" /></a>
@@ -89,17 +89,33 @@ Tested against Python standard library copy with a seeded logic defect (`end != 
 | 3. Last Function Modifier (`JSONDecoder.decode`) | ~3,660 tok (`git log -p -3`) | ~79–90 tok (`history`, 1 call) | ~79–90 tok (`history`, 1 call) | -97.8% | Function-level `git log -L` diff extraction |
 | 4. Broad Query (40 hits in 18 functions) | ~600 tok (`grep -rn`, noisy, no func context) | ~957 tok / ~2,869 tok (docstrings first) | ~196 tok (1 call) | -67% vs grep / -80% to -93% vs v1.6 | Code-Hit Priority + Adaptive Compact Mode |
 
-### 1b. 14-Case Bug Suite (v1.7.3, `python3 tests/bugcases/run_bench.py`)
+### 1b. 14-Case Polyglot Bug Suite Benchmark (`python3 tests/bugcases/run_bench.py`)
 
-Seeded bugs in Python, JS, Go, Java, Ruby, PHP and Rust. "Found" = the root-cause line appears in the output (tokens ~ chars/4, 1 run).
+Seeded bugs across 7 runtimes (Python, Node, Go, Java, Ruby, PHP, Rust) tested directly in automated unit tests (`tests/test_benchmark_showcase.py`). "Found" (`ok`) = the root-cause line appears in the output (tokens ~ chars/4).
 
-| Method | Total tokens | Root-cause line found |
-|---|---|---|
-| Plain: grep + read +-4 lines per frame | 3,411 | 11 / 14 |
-| Plain: grep + read +-8 lines per frame | 5,035 | 13 / 14 |
-| lazy-read v1.7.3 (`trace` / `find`) | 2,859 | 13 / 14 |
+| Case | Scenario & Defect Type | Plain ±4 lines | Plain ±8 lines | lazy-read v1.7.3 | Status |
+|---|---|:---:|:---:|:---:|:---:|
+| **PY-1** | Deep trace, TypeError (`jsonpkg`) | 430 tok (ok) | 789 tok (ok) | **353 tok** | **ok** |
+| **PY-2** | Silent logic bug: sort order wrong | 122 tok (ok) | 235 tok (ok) | **177 tok** | **ok** |
+| **PY-3** | Long function, bug 15 lines above crash | 454 tok (MISS) | 830 tok (MISS) | **648 tok** | **ok** |
+| **PY-4** | Bug in CALLER function frame | 221 tok (ok) | 286 tok (ok) | **194 tok** | **ok** |
+| **JS-1** | Node TypeError, 7 stack frames | 367 tok (ok) | 521 tok (ok) | **237 tok** | **ok** |
+| **JS-2** | Lost `this` + external node_modules | 199 tok (ok) | 289 tok (ok) | **134 tok** | **ok** |
+| **JS-3** | Async Promise rejection chain | 193 tok (ok) | 246 tok (ok) | **151 tok** | **ok** |
+| **JS-4** | Silent pagination logic, 9 `slice(` hits | 569 tok (ok) | 569 tok (ok) | **191 tok** | **ok** |
+| **GO-1** | Go runtime panic, bug 4 lines above | 134 tok (MISS) | 219 tok (ok) | **171 tok** | **ok** |
+| **GO-2** | Nil map, root cause NOT in call stack | 137 tok (MISS) | 237 tok (ok) | 120 tok | MISS |
+| **JAVA-1** | Java NPE (`Caused by:` innermost first) | 206 tok (ok) | 293 tok (ok) | **158 tok** | **ok** |
+| **RB-1** | Ruby NoMethodError, bug in caller frame | 141 tok (ok) | 208 tok (ok) | **91 tok** | **ok** |
+| **PHP-1** | PHP DivisionByZero exception | 137 tok (ok) | 150 tok (ok) | **90 tok** | **ok** |
+| **RS-1** | Rust `unwrap()` panic | 101 tok (ok) | 163 tok (ok) | **144 tok** | **ok** |
+| **TOTAL** | **Polyglot 7-Language Suite Summary** | **3,411 tok (11/14)** | **5,035 tok (13/14)** | **2,859 tok (13/14)** | **-43.2% vs ±8** |
 
-Misses: GO-2 only (root cause is in an uncalled factory, not present on the call stack). JS-4 is captured via tiny-symbol preservation.
+*Key Findings:*
+- **Highest Accuracy:** lazy-read captures 13/14 bugs (tied for first), beating Plain ±4 lines by +2 bugs while using 552 fewer tokens (-16.2%).
+- **Massive Token Savings:** Slashes token usage from 5,035 tokens down to **2,859 tokens (-43.2% / saving 2,176 tokens)** compared to Plain ±8 lines.
+- **Critical Wins:** Uniquely captures **PY-3** (which both Plain ±4 and ±8 completely miss) and captures **JS-4** via tiny-symbol preservation without truncating adjacent boundary logic.
+- **Theoretical Ceiling (GO-2):** Only GO-2 is missed across the suite because the nil map initialization resides in an uninvoked factory function completely absent from the panic call stack.
 
 ### 2. Multi-Modal Token Savings
 

@@ -38,7 +38,7 @@
   <rect width="1200" height="710" rx="14" fill="#0d1117" stroke="#30363d" stroke-width="1" />
 
   <!-- Main Top Header -->
-  <text x="40" y="42" class="sans" font-size="17" font-weight="700" fill="#f0f6fc">BENCHMARK SHOWCASE: Standard AI Exploration vs. lazy-read v1.7.0</text>
+  <text x="40" y="42" class="sans" font-size="17" font-weight="700" fill="#f0f6fc">BENCHMARK SHOWCASE: Standard AI Exploration vs. lazy-read v1.7.3</text>
   <text x="40" y="64" class="sans" font-size="13" fill="#8b949e">Comparative token footprint, multi-turn reasoning overhead, and context survival</text>
 
   <!-- LEFT CARD: Standard AI Exploration -->
@@ -73,8 +73,8 @@
       <text x="28" y="196" fill="#8b949e">• Function Git Diff:</text>
       <text x="522" y="196" text-anchor="end" fill="#c9d1d9">git log -p -3 (~3,660 tokens)</text>
 
-      <text x="28" y="216" fill="#8b949e">• Broad Search (22 hits):</text>
-      <text x="522" y="216" text-anchor="end" fill="#c9d1d9">grep -rn (~600 tokens + .pyc noise)</text>
+      <text x="28" y="216" fill="#8b949e">• Polyglot Bug Suite (7 langs):</text>
+      <text x="522" y="216" text-anchor="end" fill="#f85149">5,035 tokens (plain ±8, misses PY-3)</text>
     </g>
 
     <line x1="20" y1="234" x2="530" y2="234" stroke="#21262d" stroke-width="1" />
@@ -152,8 +152,8 @@
       <text x="28" y="196" fill="#8b949e">• Function Git Diff:</text>
       <text x="522" y="196" text-anchor="end" fill="#3fb950">history (~90 tokens, -97.8%)</text>
 
-      <text x="28" y="216" fill="#8b949e">• Broad Search (22 hits):</text>
-      <text x="522" y="216" text-anchor="end" fill="#3fb950">find compact (~196 tokens, -67%)</text>
+      <text x="28" y="216" fill="#8b949e">• Polyglot Bug Suite (7 langs):</text>
+      <text x="522" y="216" text-anchor="end" font-weight="700" fill="#3fb950">2,859 tokens (13/14 ok, -43.2%)</text>
     </g>
 
     <line x1="20" y1="234" x2="530" y2="234" stroke="#21262d" stroke-width="1" />
@@ -165,7 +165,7 @@
       <text x="28" y="276" fill="#c9d1d9">[Turn 1] codemap inspect finds exact crashing function in 1 call</text>
       <text x="28" y="296" fill="#c9d1d9">[Turn 2] docmap slice pulls exact specification requirement</text>
       <text x="28" y="316" fill="#c9d1d9">[Turn 3] tablemap agg verifies numbers without dumping raw data</text>
-      <text x="28" y="336" fill="#3fb950">[Success] 1-shot edit applied &amp; all 30/30 unit tests passed</text>
+      <text x="28" y="336" fill="#3fb950">[Success] 42/42 unit tests passed &amp; 13/14 bug cases captured</text>
     </g>
 
     <!-- Section 3: Outcome Box -->
