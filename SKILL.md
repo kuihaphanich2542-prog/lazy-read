@@ -3,7 +3,7 @@ name: lazy-read
 description: "Cut input tokens when exploring or reading large inputs. Code repos: skeleton map + surgical symbol slices. Long documents (md, txt, html, docx, pdf): outline then read one section. Tables (csv, xlsx): schema and aggregates instead of rows. Use before reading any big file."
 ---
 
-# Lazy-Read (v1.7.3) — Read the Map First, Then Slice
+# Lazy-Read (v1.7.4) — Read the Map First, Then Slice
 
 Instead of loading whole files, read a compact index first, then pull only the exact lines, section or rows needed. Three read-only helpers, Python 3 standard library only, no network, nothing is modified:
 
@@ -13,7 +13,7 @@ Instead of loading whole files, read a compact index first, then pull only the e
 | Documents (md, txt, html, docx, pdf*) | `scripts/docmap.py` | `outline` | `slice` / `search` |
 | Tables (csv, tsv, xlsx) | `scripts/tablemap.py` | `schema` | `agg` / `slice` / `find` |
 
-`SKILL_DIR` = the folder containing this file. *PDF needs `pdftotext` (poppler). If scripts or Python are unavailable, fall back to your normal file tools with line/page/row limits (grep, head, offset/limit). Files under ~40 lines (code) or ~2k tokens (docs/tables): just read them.
+`SKILL_DIR` = the folder containing this file. *PDF needs `pdftotext` (poppler). If scripts or Python are unavailable, fall back to your normal file tools with line/page/row limits (grep, head, offset/limit). Files under ~500 lines (code) or ~2k tokens (docs/tables): direct read is often best to keep full global context without multi-step overhead. Files > 500 lines: use lazy-read to navigate.
 
 ---
 
@@ -30,13 +30,13 @@ Instead of loading whole files, read a compact index first, then pull only the e
    - Slices carry `# CONTEXT imp:... | called_by:...` and verbatim lines, so edits apply first try.
    - Slices over 120 lines fold with a hint (`--max-lines N`, `0` = unlimited).
    - Check the `# SLICE file [symbol] (Lx-Ly)` header before trusting a slice.
-4. Extra ranges: `codemap.py slice <repo> <Symbol | file:start-end>`; locate text/calls: `codemap.py search <repo> <text>`.
+4. Extra ranges: `codemap.py slice <repo> <Symbol | file:start-end>`; locate text/calls: `codemap.py search <repo> <text>`. Top-level constants (e.g. `SERVER_CONFIG`, `BROWSER_LOGIN_LOCK`) are indexed under `const:` and can be inspected directly (`codemap.py inspect <repo> CONSTANT_NAME`).
 
 Flags: `map --mode ultra|full|lite`, `--lean`, `--full-detail`, `--no-cache`; `map`/`inspect --exclude GLOB` (repeatable); `inspect --max-per-query N`, `--max-lines N`. Skeleton cache lives outside the repo (`~/.cache/lazy-read`, override with `LAZYREAD_CACHE_DIR`).
 
 Caveats: JS/TS/C-family/etc. use regex heuristics (Python uses real `ast`); the vendor skip hides directories named `lodash`, `third_party`, `3rdparty`, `externals`, `bower_components` (map that path directly if it is your own code). When writing new code from the skeleton, `inspect` the real functions you will call so signatures are exact.
 
-### Debugging a bug (v1.7.3): error message / stack trace -> function -> what changed
+### Debugging a bug (v1.7.4): error message / stack trace -> function -> what changed
 
 Run the failing command with Bash first; these commands then turn its output into the exact code to read.
 
@@ -53,7 +53,7 @@ Then edit with your normal tools and re-run the failing command. `search` finds 
 3. `docmap.py slice <file> <#id | "title" | L120-180 | p3-5>` — one section, line range, or PDF pages; folds after 6000 chars with a continue hint (`--max-chars 0` = unlimited).
 4. Answer from the slice and cite section ids / lines.
 
-Caveats: identical titles nested parent/child resolve to the outer section; true duplicates return an id list. PDF headings come from font size (no larger-font headings → one section per page). Scanned PDFs have no text layer: not supported (no OCR). Word headings need real Heading styles; headingless text falls back to 40-line chunks.
+Caveats: identical titles nested parent/child resolve to the outer section; true duplicates return an id list. HTML files index `<script>` code blocks so search finds client-side scripts, tokens, and APIs without false negatives. PDF headings come from font size (no larger-font headings → one section per page). Scanned PDFs have no text layer: not supported (no OCR). Word headings need real Heading styles; headingless text falls back to 40-line chunks.
 
 ## C. Tables (`tablemap.py`)
 

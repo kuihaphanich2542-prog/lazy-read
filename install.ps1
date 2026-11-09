@@ -108,7 +108,7 @@ echo Unknown command: %CMD%. Run 'lazy-read --help' for usage.
 goto end
 
 :help
-echo lazy-read v1.7.3 -- Read the map first, then slice
+echo lazy-read v1.7.4 -- Read the map first, then slice
 echo.
 echo Usage:
 echo   lazy-read map ^<repo^> [flags]        # Codebase skeleton map
@@ -131,7 +131,7 @@ Write-Host "Verification check passed: 100% operational." -ForegroundColor Green
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host " lazy-read v1.7.3 installed successfully!" -ForegroundColor Green
+Write-Host " lazy-read v1.7.4 installed successfully!" -ForegroundColor Green
 Write-Host " Skill path: $InstallDir"
 Write-Host " CLI wrapper: $cmdWrapper"
 Write-Host ""

@@ -1,10 +1,10 @@
-# Lazy-Read (lazy-read v1.7.3)
+# Lazy-Read (lazy-read v1.7.4)
 
 <p align="left">
   <a href="https://github.com/kuihaphanich2542-prog/lazy-read/stargazers"><img src="https://img.shields.io/github/stars/kuihaphanich2542-prog/lazy-read?style=flat-square&logo=github&color=3fb950" alt="GitHub Stars" /></a>
-  <a href="tests"><img src="https://img.shields.io/badge/tests-43%2F43%20passed-3fb950?style=flat-square" alt="Tests" /></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-44%2F44%20passed-3fb950?style=flat-square" alt="Tests" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue?style=flat-square&logo=python" alt="Python" /></a>
-  <a href="CHANGES.md"><img src="https://img.shields.io/badge/release-v1.7.3-blueviolet?style=flat-square" alt="Version" /></a>
+  <a href="CHANGES.md"><img src="https://img.shields.io/badge/release-v1.7.4-blueviolet?style=flat-square" alt="Version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-informational?style=flat-square" alt="License" /></a>
 </p>
 

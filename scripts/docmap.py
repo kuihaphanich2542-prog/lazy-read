@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 from xml.etree import ElementTree as ET
 
-VERSION = "1.7.3"
+VERSION = "1.7.4"
 TOK = 4  # approx chars per token (same convention as lazy-read)
 
 Head = Tuple[int, str, int]  # (level, title, 1-based line index)
@@ -104,6 +104,7 @@ class _HTMLText(HTMLParser):
         self.lines: List[str] = [""]
         self.heads: List[Head] = []
         self._skip = 0
+        self._in_script = False
         self._h: Optional[int] = None
         self._hbuf: List[str] = []
 
@@ -112,8 +113,11 @@ class _HTMLText(HTMLParser):
             self.lines.append("")
 
     def handle_starttag(self, tag, attrs):
-        if tag in ("script", "style", "noscript", "svg"):
+        if tag in ("style", "noscript", "svg"):
             self._skip += 1
+        elif tag == "script":
+            self._in_script = True
+            self._nl()
         elif re.fullmatch(r"h[1-6]", tag):
             self._nl()
             self._h = int(tag[1])
@@ -124,8 +128,11 @@ class _HTMLText(HTMLParser):
             self.lines[-1] += " | "
 
     def handle_endtag(self, tag):
-        if tag in ("script", "style", "noscript", "svg"):
+        if tag in ("style", "noscript", "svg"):
             self._skip = max(0, self._skip - 1)
+        elif tag == "script":
+            self._in_script = False
+            self._nl()
         elif re.fullmatch(r"h[1-6]", tag) and self._h:
             title = " ".join("".join(self._hbuf).split())
             if title:
@@ -137,6 +144,13 @@ class _HTMLText(HTMLParser):
 
     def handle_data(self, data):
         if self._skip:
+            return
+        if self._in_script:
+            for sl in data.splitlines():
+                st = sl.strip()
+                if st:
+                    self._nl()
+                    self.lines[-1] = st
             return
         t = " ".join(data.split())
         if not t:

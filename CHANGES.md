@@ -1,5 +1,11 @@
 # Changelog
 
+## Changes in v1.7.4 (HTML Inline Script Indexing & Module-Level Constants Extraction)
+- **HTML `<script>` Indexing (`docmap.py`):** Fixed critical false-negative blind spot in HTML parsing. `_HTMLText` now indexes `<script>` blocks (while skipping `<style>` and `<svg>`), ensuring searches for `Authorization`, client-side API logic, and tokens inside Single-Page Apps (SPAs) and legacy dashboards return exact hits and line numbers instead of 0 hits.
+- **Module-Level Constants Extraction (`codemap.py`):** Added root-level `ast.Assign` and `ast.AnnAssign` parsing for Python, and top-level `const` extraction for JS/TS. Variables like `SERVER_CONFIG`, `BROWSER_LOGIN_LOCK`, ports, and globals are now indexed under `const:` in `map`, and can be directly queried via `slice` and `inspect` (`codemap.py inspect <repo> SERVER_CONFIG`).
+- **File-Size Guidelines (`SKILL.md`):** Updated skill documentation with realistic token economics. Files under ~500 lines are recommended for direct reading to preserve full module context without multi-step roundtrips.
+- **Suite Expansion:** Test suite expanded to 44 automated tests, verifying HTML script searchability and constant slicing with 100% pass rate.
+
 ## Changes in v1.7.3 (Tiered Caller Hierarchy & Tiny-Symbol Preservation: 13/14 at 2,859 Tokens)
 - **`trace` Tiered Caller Window Hierarchy:** Leaf/crash frames receive full symbol body context. Immediate parent caller frames receive `--caller-window 2` context to expose argument preparation and caller-site logic. Distant grandparent+ frames automatically compact to pinpoint call lines, eliminating unnecessary token bloat across deep stack traces (-277 tokens across the test suite).
 - **`find` Tiny-Symbol Preservation:** Symbols with `<= 6 lines` in broad find mode are preserved completely whole instead of being truncated with ellipses (`...`). Prevents omitting critical adjacent boundary logic (`size - 1` in JS-4) while actually saving tokens over formatting overhead.

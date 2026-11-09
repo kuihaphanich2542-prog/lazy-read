@@ -26,7 +26,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-VERSION = "1.7.3"
+VERSION = "1.7.4"
 
 NOISE_CALLS = {
     "print", "len", "str", "int", "float", "bool", "list", "dict", "set", "tuple",
@@ -286,6 +286,7 @@ def parse_python(source: str) -> Dict[str, Any]:
         "exports": [],
         "classes": [],
         "functions": [],
+        "constants": [],
         "doc": "",
     }
     try:
@@ -306,11 +307,33 @@ def parse_python(source: str) -> Dict[str, Any]:
                 result["imports"].append(node.module.split(".")[0])
         elif isinstance(node, ast.Assign):
             for target in node.targets:
-                if isinstance(target, ast.Name) and target.id == "__all__":
-                    if isinstance(node.value, (ast.List, ast.Tuple)):
-                        for elt in node.value.elts:
-                            if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
-                                result["exports"].append(elt.value)
+                if isinstance(target, ast.Name):
+                    if target.id == "__all__":
+                        if isinstance(node.value, (ast.List, ast.Tuple)):
+                            for elt in node.value.elts:
+                                if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                                    result["exports"].append(elt.value)
+                    else:
+                        result["constants"].append({
+                            "name": target.id,
+                            "line": node.lineno,
+                            "end_line": getattr(node, "end_lineno", node.lineno),
+                        })
+                elif isinstance(target, (ast.Tuple, ast.List)):
+                    for elt in target.elts:
+                        if isinstance(elt, ast.Name) and elt.id != "__all__":
+                            result["constants"].append({
+                                "name": elt.id,
+                                "line": node.lineno,
+                                "end_line": getattr(node, "end_lineno", node.lineno),
+                            })
+        elif isinstance(node, ast.AnnAssign):
+            if isinstance(node.target, ast.Name) and node.target.id != "__all__":
+                result["constants"].append({
+                    "name": node.target.id,
+                    "line": node.lineno,
+                    "end_line": getattr(node, "end_lineno", node.lineno),
+                })
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             fn_info = _extract_py_func(node)
             result["functions"].append(fn_info)
@@ -399,11 +422,13 @@ def parse_js_ts(source: str) -> Dict[str, Any]:
     exports: List[str] = []
     classes: List[Dict[str, Any]] = []
     functions: List[Dict[str, Any]] = []
+    constants: List[Dict[str, Any]] = []
 
     # Imports & Requires (scan raw lines for module paths)
     re_import = re.compile(r"""(?:import\s+.*?from\s+|import\s+|require\s*\(\s*)['"]([^'"]+)['"]""")
     re_export = re.compile(r"""^\s*export\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var|interface|type|enum)\s+([A-Za-z_$][\w$]*)""")
     re_cjs_export = re.compile(r"""module\.exports\s*=|exports\.([A-Za-z_$][\w$]*)""")
+    re_const = re.compile(r"""^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=]+)?=""")
 
     for rl in raw_lines:
         for m in re_import.finditer(rl):
@@ -497,6 +522,17 @@ def parse_js_ts(source: str) -> Dict[str, Any]:
                 })
                 continue
 
+            m_const = re_const.match(s_line)
+            if m_const and not re_arrow.match(s_line) and not re_prop_fn.match(s_line):
+                const_name = m_const.group(1)
+                end_ln = find_block_end_line(s_lines, idx, start_d, end_d)
+                constants.append({
+                    "name": const_name,
+                    "line": line_no,
+                    "end_line": end_ln,
+                })
+                continue
+
         elif depth == 1 and active_class is not None:
             m_meth = re_method.match(s_line)
             if m_meth:
@@ -517,6 +553,7 @@ def parse_js_ts(source: str) -> Dict[str, Any]:
         "exports": sorted(set(exports))[:12],
         "classes": classes,
         "functions": functions,
+        "constants": constants,
         "doc": "",
     }
 
@@ -635,6 +672,7 @@ def parse_c_cpp(source: str) -> Dict[str, Any]:
         "exports": [],
         "classes": classes,
         "functions": functions,
+        "constants": [],
         "doc": "",
     }
 
@@ -720,6 +758,7 @@ def parse_go_rust(source: str, lang: str) -> Dict[str, Any]:
         "exports": [],
         "classes": classes,
         "functions": functions,
+        "constants": [],
         "doc": "",
     }
 
@@ -788,6 +827,7 @@ def parse_jvm_csharp_swift(source: str) -> Dict[str, Any]:
         "exports": [],
         "classes": classes,
         "functions": functions,
+        "constants": [],
         "doc": "",
     }
 
@@ -830,7 +870,7 @@ def parse_ruby(source: str) -> Dict[str, Any]:
                     owner = cl
             (owner["methods"] if owner else functions).append(fn)
     return {"lines": len(lines), "imports": [], "exports": [], "classes": classes,
-            "functions": functions, "doc": ""}
+            "functions": functions, "constants": [], "doc": ""}
 
 
 def parse_php(source: str) -> Dict[str, Any]:
@@ -859,7 +899,7 @@ def parse_php(source: str) -> Dict[str, Any]:
                     owner = cl
             (owner["methods"] if owner else functions).append(fn)
     return {"lines": len(raw_lines), "imports": [], "exports": [], "classes": classes,
-            "functions": functions, "doc": ""}
+            "functions": functions, "constants": [], "doc": ""}
 
 
 def parse_generic_fallback(source: str, lang: str) -> Dict[str, Any]:
@@ -890,6 +930,7 @@ def parse_generic_fallback(source: str, lang: str) -> Dict[str, Any]:
         "exports": [],
         "classes": classes,
         "functions": functions,
+        "constants": [],
         "doc": "",
     }
 
@@ -1051,11 +1092,14 @@ def format_caveman_index(
             for fname, info in items:
                 n_cls = len(info.get("classes", []))
                 n_fn = len(info.get("functions", []))
+                n_const = len(info.get("constants", []))
                 tag = f"{fname}({info['lines']}L"
                 if n_cls:
                     tag += f",{n_cls}c"
                 if n_fn:
                     tag += f",{n_fn}f"
+                if n_const:
+                    tag += f",{n_const}v"
                 tag += ")"
                 file_summaries.append(tag)
             out_lines.append(f"dir {d}/ [{len(items)}f, {d_lines}L]: " + ", ".join(file_summaries))
@@ -1068,6 +1112,8 @@ def format_caveman_index(
                 segs.append("imp:" + ",".join(info["imports"][:6]))
             if info.get("exports"):
                 segs.append("exp:" + ",".join(info["exports"][:6]))
+            if info.get("constants"):
+                segs.append("const:" + ",".join(c["name"] for c in info["constants"][:8]))
 
             cls_strs = []
             for c in info.get("classes", []):
@@ -1160,6 +1206,11 @@ def search_symbols(index: Dict[str, Dict[str, Any]], query: str) -> str:
                 hits.append(
                     f"fn    {rel_path}:{f['line']}-{f.get('end_line', f['line'])}  {f['name']}({f.get('params','')}){calls_str}"
                 )
+        for c in info.get("constants", []):
+            if q in c["name"].lower():
+                hits.append(
+                    f"const {rel_path}:{c['line']}-{c.get('end_line', c['line'])}  {c['name']}"
+                )
     if not hits:
         return f"No symbol matching '{query}'. (For text such as error messages use: codemap.py find <path> '<text>')"
     return f"# Search '{query}' ({len(hits)} hits):\n" + "\n".join(hits[:50])
@@ -1196,6 +1247,9 @@ def slice_symbol(root_path: Path, index: Dict[str, Dict[str, Any]], target: str)
         for f in info.get("functions", []):
             if f["name"].lower() == q:
                 matches.append((rel_path, f"fn {f['name']}", f["line"], f.get("end_line", f["line"])))
+        for c in info.get("constants", []):
+            if c["name"].lower() == q:
+                matches.append((rel_path, f"const {c['name']}", c["line"], c.get("end_line", c["line"])))
 
     if not matches:
         return search_symbols(index, target)
@@ -1310,6 +1364,14 @@ def inspect_batch(
                     f["line"],
                     f.get("end_line", f["line"]),
                 ))
+            for c in info.get("constants", []):
+                all_syms.append((
+                    f"const {c['name']}",
+                    c["name"],
+                    [],
+                    c["line"],
+                    c.get("end_line", c["line"]),
+                ))
 
             for label, name, calls, s_ln, e_ln in all_syms:
                 name_low = name.lower()
@@ -1422,6 +1484,8 @@ def _symbol_spans(info: Dict[str, Any]) -> List[Tuple[int, int, str]]:
             spans.append((m["line"], m.get("end_line", m["line"]), f"{c['name']}.{m['name']}"))
     for f in info.get("functions", []):
         spans.append((f["line"], f.get("end_line", f["line"]), f["name"]))
+    for c in info.get("constants", []):
+        spans.append((c["line"], c.get("end_line", c["line"]), f"const {c['name']}"))
     return spans
 
 

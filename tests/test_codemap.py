@@ -51,6 +51,36 @@ async def verify_jwt(token: str) -> dict:
         self.assertEqual(res["functions"][0]["line"], 12)
         self.assertEqual(res["functions"][0]["end_line"], 14)
 
+    def test_01b_python_module_level_constants_and_slice(self):
+        src = '''
+SERVER_CONFIG = {
+    "host": "0.0.0.0",
+    "port": 8080,
+}
+BROWSER_LOGIN_LOCK: str = "lock"
+MAX_CONNECTIONS = 100
+
+def run():
+    pass
+'''
+        res = codemap.parse_python(src)
+        const_names = [c["name"] for c in res["constants"]]
+        self.assertIn("SERVER_CONFIG", const_names)
+        self.assertIn("BROWSER_LOGIN_LOCK", const_names)
+        self.assertIn("MAX_CONNECTIONS", const_names)
+
+        with tempfile.TemporaryDirectory() as td:
+            f = pathlib.Path(td) / "drill_server.py"
+            f.write_text(src)
+            idx = codemap.scan_repository(f, use_cache=False)
+            full_map = codemap.format_caveman_index(idx, mode="full")
+            self.assertIn("const:SERVER_CONFIG,BROWSER_LOGIN_LOCK,MAX_CONNECTIONS", full_map)
+            sliced = codemap.slice_symbol(f, idx, "SERVER_CONFIG")
+            self.assertIn("SERVER_CONFIG = {", sliced)
+            self.assertIn("8080", sliced)
+            inspected = codemap.inspect_batch(f, idx, ["BROWSER_LOGIN_LOCK"])
+            self.assertIn("BROWSER_LOGIN_LOCK: str = \"lock\"", inspected)
+
     def test_02_c_pointer_functions_and_zero_false_positives(self):
         src = '''#include <stdio.h>
 #include "mypyc_runtime.h"

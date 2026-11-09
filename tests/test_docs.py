@@ -55,11 +55,15 @@ class TestDocmap(unittest.TestCase):
 
     def test_html_headings_skip_scripts(self):
         f = self.p / "d.html"
-        f.write_text("<html><script>var secret=1;</script><h1>Top</h1><p>" + "word " * 500 + "</p><h2>Sub</h2><p>" + "more " * 300 + "</p></html>")
+        f.write_text("<html><script>var secret=1;\nconst Authorization='Bearer token';</script><h1>Top</h1><p>" + "word " * 500 + "</p><h2>Sub</h2><p>" + "more " * 300 + "</p></html>")
         out = run(DOC, "outline", str(f))
         self.assertIn("Top", out)
         self.assertIn("Sub", out)
         self.assertNotIn("secret", run(DOC, "slice", str(f), "Top"))
+        # script searchability test (verifies scripts are indexed for search)
+        search_auth = run(DOC, "search", str(f), "Authorization")
+        self.assertIn("Authorization", search_auth)
+        self.assertIn("Bearer token", search_auth)
 
     def test_docx_styles_and_tables(self):
         W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'

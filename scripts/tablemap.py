@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Tuple
 from xml.etree import ElementTree as ET
 
-VERSION = "1.7.3"
+VERSION = "1.7.4"
 TOK = 4
 UNIQ_CAP = 2000  # per-column distinct-value tracking cap
 
